@@ -24,7 +24,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintStream;
-import java.util.NoSuchElementException;
 
 /**
  * @author liaozan
@@ -62,12 +61,18 @@ public class IntegrationBuilder extends Builder {
         return deletePushedImage;
     }
 
+    /**
+     * Builder start
+     */
     @Override
     public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) {
         try {
-            checkWorkspace(build.getWorkspace());
-            // mavenBuild(build, launcher, listener);
-            clean(build, launcher, listener);
+            // fail fast if workspace is invalid
+            checkWorkspaceValid(build.getWorkspace());
+            // maven build & docker build (push)
+            performMavenBuild(build, launcher, listener);
+            // delete the built image if possible
+            tryDeletePushedImage(build, launcher, listener);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -79,36 +84,53 @@ public class IntegrationBuilder extends Builder {
         return (IntegrationDescriptor) super.getDescriptor();
     }
 
-    private void clean(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws Exception {
+    /**
+     * Delete the image produced in the build
+     */
+    private void tryDeletePushedImage(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws Exception {
         if (deletePushedImage) {
             PrintStream logger = listener.getLogger();
-            logger.println("delete pushed image...");
+            logger.println("try to delete pushed image");
             String imageName = lookupImageName(build, listener);
             if (imageName == null) {
                 return;
             }
-            ProcStarter dockerProcess = launcher
+            ProcStarter dockerRmiProcess = launcher
                     .launch()
                     .cmdAsSingleString(String.format("docker rmi -f %s", imageName));
-            executeWithLogger(logger, dockerProcess);
+            executeWithLogger(logger, dockerRmiProcess);
+
+            ProcStarter dockerImagePruneProcess = launcher
+                    .launch()
+                    .cmdAsSingleString("docker image prune -f");
+            executeWithLogger(logger, dockerImagePruneProcess);
         }
 
     }
 
-    private void checkWorkspace(@Nullable FilePath workspace) throws Exception {
+    /**
+     * Check workspace
+     */
+    private FilePath checkWorkspaceValid(@Nullable FilePath workspace) throws Exception {
         if (workspace == null) {
             throw new IllegalStateException("workspace is null");
         }
         if (!workspace.exists()) {
             throw new IllegalStateException("workspace is not exist");
         }
+        return workspace;
     }
 
+    /**
+     * lookup the special file create from dockerfile-maven-plugin
+     * <p>
+     * default location is rootModule/executableSubModule/target/docker/image-name
+     */
     @Nullable
-    private String lookupImageName(AbstractBuild<?, ?> build, BuildListener listener) throws IOException, InterruptedException {
+    private String lookupImageName(AbstractBuild<?, ?> build, BuildListener listener) throws Exception {
         String imageNameFileName = "image-name";
         FilePath workspace = getWorkspace(build);
-        FilePath[] fileList = workspace.list("**/**/" + imageNameFileName);
+        FilePath[] fileList = workspace.list("**/" + imageNameFileName);
         PrintStream logger = listener.getLogger();
         if (fileList.length == 0) {
             logger.println("could not found matched file: " + imageNameFileName);
@@ -123,27 +145,17 @@ public class IntegrationBuilder extends Builder {
         return fileList[0].readToString();
     }
 
-    private FilePath getWorkspace(AbstractBuild<?, ?> build) {
+    private FilePath getWorkspace(AbstractBuild<?, ?> build) throws Exception {
         FilePath workspace = build.getWorkspace();
-        if (workspace == null) {
-            throw new IllegalStateException("workspace should not be null");
-        }
-        return workspace;
+        return checkWorkspaceValid(workspace);
     }
 
-    private void mavenBuild(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws Exception {
-        MavenInstallation installation;
-        MavenInstallation[] installations = Jenkins.get().getDescriptorByType(Maven.DescriptorImpl.class).getInstallations();
-        if (ArrayUtils.isEmpty(installations)) {
-            throw new NoSuchElementException("maven 安装不可用");
-        } else {
-            installation = installations[0];
-        }
-
-        EnvVars environment = build.getEnvironment(listener);
-        installation.buildEnvVars(environment);
-
-        String mavenCommand = buildMavenCommand(build, environment);
+    /**
+     * Build project through maven
+     */
+    private void performMavenBuild(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws Exception {
+        EnvVars environment = contributeMavenEnvVars(build, listener);
+        String mavenCommand = buildMavenCommand(build);
         ProcStarter mvnProcess = launcher
                 .launch()
                 .pwd(getWorkspace(build))
@@ -152,7 +164,27 @@ public class IntegrationBuilder extends Builder {
         executeWithLogger(listener.getLogger(), mvnProcess);
     }
 
-    private String buildMavenCommand(AbstractBuild<?, ?> build, EnvVars environment) {
+    /**
+     * Collect maven EnvVars, return empty if maven installations is not set up
+     */
+    private EnvVars contributeMavenEnvVars(AbstractBuild<?, ?> build, BuildListener listener) throws IOException, InterruptedException {
+        MavenInstallation installation;
+        MavenInstallation[] installations = Jenkins.get().getDescriptorByType(Maven.DescriptorImpl.class).getInstallations();
+        if (ArrayUtils.isEmpty(installations)) {
+            // maven installations is not set up, return directly with empty envVar
+            return new EnvVars();
+        } else {
+            installation = installations[0];
+            EnvVars environment = build.getEnvironment(listener);
+            installation.buildEnvVars(environment);
+            return environment;
+        }
+    }
+
+    /**
+     * Build maven command to execute
+     */
+    private String buildMavenCommand(AbstractBuild<?, ?> build) {
         StringBuilder mavenCommand = new StringBuilder(getMvnCommand())
                 .append(buildSystemEnv("dockerfile.build.skip=" + !buildImage))
                 .append(buildSystemEnv("dockerfile.push.skip=" + !pushImage));
@@ -166,7 +198,7 @@ public class IntegrationBuilder extends Builder {
         return String.format(" -D%s ", option);
     }
 
-    private void executeWithLogger(OutputStream outputStream, ProcStarter starter) throws IOException, InterruptedException {
+    private void executeWithLogger(OutputStream outputStream, ProcStarter starter) throws Exception {
         OutputStream stdout = new TeeOutputStream(outputStream, new ByteArrayOutputStream());
         OutputStream stderr = new TeeOutputStream(outputStream, new ByteArrayOutputStream());
         starter.stdout(stdout).stderr(stderr).start().join();
@@ -193,13 +225,14 @@ public class IntegrationBuilder extends Builder {
 
         public FormValidation doCheckMvnCommand(@QueryParameter String value) {
             if (StringUtils.isEmpty(value)) {
-                return FormValidation.error("mvnCommand is empty");
+                return FormValidation.error("Maven命令不能为空");
             }
             return FormValidation.ok();
         }
 
         @Override
         public boolean configure(StaplerRequest req, JSONObject formData) throws FormException {
+            save();
             return super.configure(req, formData);
         }
 
