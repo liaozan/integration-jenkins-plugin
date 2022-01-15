@@ -2,9 +2,7 @@ package com.schbrain.ci.jenkins.plugins.integration.builder;
 
 import hudson.*;
 import hudson.Launcher.ProcStarter;
-import hudson.model.AbstractBuild;
-import hudson.model.AbstractProject;
-import hudson.model.BuildListener;
+import hudson.model.*;
 import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.Builder;
 import hudson.tasks.Maven;
@@ -15,6 +13,7 @@ import net.sf.json.JSONObject;
 import org.apache.commons.io.output.TeeOutputStream;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
+import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
 
@@ -23,6 +22,9 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintStream;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * @author liaozan
@@ -251,12 +253,14 @@ public class IntegrationBuilder extends Builder {
 
         @Override
         public Builder newInstance(StaplerRequest req, JSONObject formData) {
-            String mvnCommand = formData.optString("mvnCommand");
-            boolean buildImage = formData.optBoolean("buildImage", true);
-            boolean pushImage = formData.optBoolean("pushImage", true);
-            boolean deletePushedImage = formData.optBoolean("deletePushedImage", true);
-            JSONObject deployConfig = formData.optJSONObject("deployConfig");
-            String configLocation = deployConfig.containsKey("configLocation") ? deployConfig.getString("configLocation") : null;
+
+            String mvnCommand = formData.getString("mvnCommand");
+            boolean buildImage = formData.getBoolean("buildImage");
+            boolean pushImage = formData.getBoolean("pushImage");
+            boolean deletePushedImage = formData.getBoolean("deletePushedImage");
+//            JSONObject deployConfig = formData.getJSONObject("deployConfig");
+//            String configLocation = deployConfig.getString("configLocation");
+            String configLocation = "";
             return new IntegrationBuilder(mvnCommand, buildImage, pushImage, deletePushedImage, configLocation);
         }
 
@@ -268,4 +272,89 @@ public class IntegrationBuilder extends Builder {
 
     }
 
+
+
+    private Deploy2K8SConfig deploy2K8SConfig;
+
+    public Deploy2K8SConfig getDeploy2K8SConfig() {
+        return deploy2K8SConfig;
+    }
+
+    public static abstract class Entry extends AbstractDescribableImpl<Entry> {
+    }
+
+    public static final class JvmEntry extends Entry {
+
+        private final String text;
+
+        @DataBoundConstructor
+        public JvmEntry(String text) {
+            this.text = text;
+        }
+
+        public String getText() {
+            return text;
+        }
+
+        @Extension
+        public static class DescriptorImpl extends Descriptor<Entry> {
+            @Override
+            public String getDisplayName() {
+                return "Jvm配置";
+            }
+        }
+
+    }
+
+    public static final class K8SEnvEntry extends Entry {
+
+        private final String text;
+
+        @DataBoundConstructor
+        public K8SEnvEntry(String text) {
+            this.text = text;
+        }
+
+        public String getText() {
+            return text;
+        }
+
+        @Extension
+        public static class DescriptorImpl extends Descriptor<Entry> {
+            @Override
+            public String getDisplayName() {
+                return "k8s环境变量配置";
+            }
+        }
+
+    }
+
+
+
+
+    public static final class Deploy2K8SConfig extends AbstractDescribableImpl<Deploy2K8SConfig> {
+
+        private final List<Entry> entries;
+
+        private final String location;
+
+        @DataBoundConstructor
+        public Deploy2K8SConfig(List<Entry> entries, String location) {
+            this.entries = entries != null ? new ArrayList<>(entries) : Collections.emptyList();
+            this.location = location;
+        }
+
+        public List<Entry> getEntries() {
+            return Collections.unmodifiableList(entries);
+        }
+
+        public String getLocation() {
+            return location;
+        }
+
+        @Extension
+        public static class DescriptorImpl extends Descriptor<Deploy2K8SConfig> {
+        }
+
+    }
 }
