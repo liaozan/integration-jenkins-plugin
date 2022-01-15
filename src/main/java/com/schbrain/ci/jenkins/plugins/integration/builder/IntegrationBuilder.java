@@ -1,8 +1,11 @@
 package com.schbrain.ci.jenkins.plugins.integration.builder;
 
+import com.schbrain.ci.jenkins.plugins.integration.builder.config.DeployToK8sConfig;
 import hudson.*;
 import hudson.Launcher.ProcStarter;
-import hudson.model.*;
+import hudson.model.AbstractBuild;
+import hudson.model.AbstractProject;
+import hudson.model.BuildListener;
 import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.Builder;
 import hudson.tasks.Maven;
@@ -13,7 +16,6 @@ import net.sf.json.JSONObject;
 import org.apache.commons.io.output.TeeOutputStream;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
-import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
 
@@ -22,9 +24,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintStream;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.Optional;
 
 /**
  * @author liaozan
@@ -36,15 +36,16 @@ public class IntegrationBuilder extends Builder {
     private final String mvnCommand;
     private final Boolean buildImage;
     private final Boolean pushImage;
-    private final Boolean deletePushedImage;
+    private final Boolean deleteImageAfterBuild;
     private final Boolean deployToK8s;
     private final String configLocation;
+    private DeployToK8sConfig deploy2K8SConfig;
 
-    public IntegrationBuilder(String mvnCommand, Boolean buildImage, Boolean pushImage, Boolean deletePushedImage, String configLocation) {
+    public IntegrationBuilder(String mvnCommand, Boolean buildImage, Boolean pushImage, Boolean deleteImageAfterBuild, String configLocation) {
         this.mvnCommand = Util.fixNull(mvnCommand);
         this.buildImage = Util.fixNull(buildImage, true);
         this.pushImage = Util.fixNull(pushImage, true);
-        this.deletePushedImage = Util.fixNull(deletePushedImage, true);
+        this.deleteImageAfterBuild = Util.fixNull(deleteImageAfterBuild, true);
         this.configLocation = Util.fixNull(configLocation);
         this.deployToK8s = StringUtils.isNotBlank(this.configLocation);
     }
@@ -61,8 +62,8 @@ public class IntegrationBuilder extends Builder {
         return pushImage;
     }
 
-    public Boolean getDeletePushedImage() {
-        return deletePushedImage;
+    public Boolean getDeleteImageAfterBuild() {
+        return deleteImageAfterBuild;
     }
 
     public Boolean getDeployToK8s() {
@@ -84,7 +85,7 @@ public class IntegrationBuilder extends Builder {
             // maven build & docker build (push)
             performMavenBuild(build, launcher, listener);
             // delete the built image if possible
-            tryDeletePushedImage(build, launcher, listener);
+            tryDeleteImageAfterBuild(build, launcher, listener);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -94,6 +95,10 @@ public class IntegrationBuilder extends Builder {
     @Override
     public IntegrationDescriptor getDescriptor() {
         return (IntegrationDescriptor) super.getDescriptor();
+    }
+
+    public DeployToK8sConfig getDeploy2K8SConfig() {
+        return deploy2K8SConfig;
     }
 
     /**
@@ -108,10 +113,16 @@ public class IntegrationBuilder extends Builder {
     /**
      * Delete the image produced in the build
      */
-    private void tryDeletePushedImage(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws Exception {
-        if (deletePushedImage) {
-            PrintStream logger = listener.getLogger();
-            logger.println("try to delete pushed image");
+    private void tryDeleteImageAfterBuild(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws Exception {
+        PrintStream logger = listener.getLogger();
+        ProcStarter dockerImagePruneProcess = launcher
+                .launch()
+                .cmdAsSingleString("docker image prune -f");
+        executeWithLogger(logger, dockerImagePruneProcess);
+        logger.println();
+
+        if (deleteImageAfterBuild) {
+            logger.println("try to delete built image");
             String imageName = lookupImageName(build, listener);
             if (imageName == null) {
                 return;
@@ -120,11 +131,6 @@ public class IntegrationBuilder extends Builder {
                     .launch()
                     .cmdAsSingleString(String.format("docker rmi -f %s", imageName));
             executeWithLogger(logger, dockerRmiProcess);
-
-            ProcStarter dockerImagePruneProcess = launcher
-                    .launch()
-                    .cmdAsSingleString("docker image prune -f");
-            executeWithLogger(logger, dockerImagePruneProcess);
         }
 
     }
@@ -253,15 +259,13 @@ public class IntegrationBuilder extends Builder {
 
         @Override
         public Builder newInstance(StaplerRequest req, JSONObject formData) {
-
-            String mvnCommand = formData.getString("mvnCommand");
-            boolean buildImage = formData.getBoolean("buildImage");
-            boolean pushImage = formData.getBoolean("pushImage");
-            boolean deletePushedImage = formData.getBoolean("deletePushedImage");
-//            JSONObject deployConfig = formData.getJSONObject("deployConfig");
-//            String configLocation = deployConfig.getString("configLocation");
-            String configLocation = "";
-            return new IntegrationBuilder(mvnCommand, buildImage, pushImage, deletePushedImage, configLocation);
+            String mvnCommand = formData.optString("mvnCommand");
+            boolean buildImage = formData.optBoolean("buildImage", true);
+            boolean pushImage = formData.optBoolean("pushImage", true);
+            boolean deleteImageAfterBuild = formData.optBoolean("deleteImageAfterBuild", true);
+            JSONObject deployConfig = formData.optJSONObject("deployConfig");
+            String configLocation = Optional.ofNullable(deployConfig).map(config -> config.optString("configLocation")).orElse(null);
+            return new IntegrationBuilder(mvnCommand, buildImage, pushImage, deleteImageAfterBuild, configLocation);
         }
 
         @Override
@@ -272,89 +276,4 @@ public class IntegrationBuilder extends Builder {
 
     }
 
-
-
-    private Deploy2K8SConfig deploy2K8SConfig;
-
-    public Deploy2K8SConfig getDeploy2K8SConfig() {
-        return deploy2K8SConfig;
-    }
-
-    public static abstract class Entry extends AbstractDescribableImpl<Entry> {
-    }
-
-    public static final class JvmEntry extends Entry {
-
-        private final String text;
-
-        @DataBoundConstructor
-        public JvmEntry(String text) {
-            this.text = text;
-        }
-
-        public String getText() {
-            return text;
-        }
-
-        @Extension
-        public static class DescriptorImpl extends Descriptor<Entry> {
-            @Override
-            public String getDisplayName() {
-                return "Jvm配置";
-            }
-        }
-
-    }
-
-    public static final class K8SEnvEntry extends Entry {
-
-        private final String text;
-
-        @DataBoundConstructor
-        public K8SEnvEntry(String text) {
-            this.text = text;
-        }
-
-        public String getText() {
-            return text;
-        }
-
-        @Extension
-        public static class DescriptorImpl extends Descriptor<Entry> {
-            @Override
-            public String getDisplayName() {
-                return "k8s环境变量配置";
-            }
-        }
-
-    }
-
-
-
-
-    public static final class Deploy2K8SConfig extends AbstractDescribableImpl<Deploy2K8SConfig> {
-
-        private final List<Entry> entries;
-
-        private final String location;
-
-        @DataBoundConstructor
-        public Deploy2K8SConfig(List<Entry> entries, String location) {
-            this.entries = entries != null ? new ArrayList<>(entries) : Collections.emptyList();
-            this.location = location;
-        }
-
-        public List<Entry> getEntries() {
-            return Collections.unmodifiableList(entries);
-        }
-
-        public String getLocation() {
-            return location;
-        }
-
-        @Extension
-        public static class DescriptorImpl extends Descriptor<Deploy2K8SConfig> {
-        }
-
-    }
 }
