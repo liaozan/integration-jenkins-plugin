@@ -63,6 +63,14 @@ public class IntegrationBuilder extends Builder {
         return deletePushedImage;
     }
 
+    public Boolean getDeployToK8s() {
+        return deployToK8s;
+    }
+
+    public String getConfigLocation() {
+        return configLocation;
+    }
+
     /**
      * Builder start
      */
@@ -243,12 +251,12 @@ public class IntegrationBuilder extends Builder {
 
         @Override
         public Builder newInstance(StaplerRequest req, JSONObject formData) {
-            String mvnCommand = formData.getString("mvnCommand");
-            boolean buildImage = formData.getBoolean("buildImage");
-            boolean pushImage = formData.getBoolean("pushImage");
-            boolean deletePushedImage = formData.getBoolean("deletePushedImage");
-            JSONObject deployConfig = formData.getJSONObject("deployConfig");
-            String configLocation = deployConfig.getString("configLocation");
+            String mvnCommand = formData.optString("mvnCommand");
+            boolean buildImage = formData.optBoolean("buildImage", true);
+            boolean pushImage = formData.optBoolean("pushImage", true);
+            boolean deletePushedImage = formData.optBoolean("deletePushedImage", true);
+            JSONObject deployConfig = formData.optJSONObject("deployConfig");
+            String configLocation = deployConfig.containsKey("configLocation") ? deployConfig.getString("configLocation") : null;
             return new IntegrationBuilder(mvnCommand, buildImage, pushImage, deletePushedImage, configLocation);
         }
 
