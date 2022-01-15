@@ -15,6 +15,10 @@
     <version>1.0</version>
     <packaging>hpi</packaging>
 
+    <scm>
+        <tag>integration-1.0</tag>
+    </scm>
+
     <properties>
         <java.level>8</java.level>
         <jenkins.version>2.330</jenkins.version>
@@ -65,8 +69,4 @@
         </pluginRepository>
     </pluginRepositories>
 
-
-    <scm>
-        <tag>integration-1.0</tag>
-    </scm>
 </project>
