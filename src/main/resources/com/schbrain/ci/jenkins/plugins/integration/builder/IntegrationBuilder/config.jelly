@@ -20,4 +20,14 @@
         <f:radio name="deletePushedImage" title="否" value="false" checked="${instance.deletePushedImage == false}"/>
     </f:entry>
 
+    <f:block>
+        <table>
+            <f:optionalBlock field="deployConfig" title="是否部署到k8s" >
+                <f:entry title="kubectl位置">
+                    <f:textbox field="kubectlLocation" />
+                </f:entry>
+            </f:optionalBlock>
+        </table>
+    </f:block>
+
 </j:jelly>

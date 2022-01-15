@@ -36,13 +36,31 @@ public class IntegrationBuilder extends Builder {
     private final Boolean buildImage;
     private final Boolean pushImage;
     private final Boolean deletePushedImage;
+    private Boolean deployToK8s;
+    private String kubectlLocation;
 
     @DataBoundConstructor
-    public IntegrationBuilder(String mvnCommand, Boolean buildImage, Boolean pushImage, Boolean deletePushedImage) {
+    public IntegrationBuilder(String mvnCommand, Boolean buildImage, Boolean pushImage, Boolean deletePushedImage, JSONObject deployConfig) {
         this.mvnCommand = Util.fixNull(mvnCommand);
         this.buildImage = Util.fixNull(buildImage, true);
         this.pushImage = Util.fixNull(pushImage, true);
         this.deletePushedImage = Util.fixNull(deletePushedImage, true);
+        setUpDeployConfig(deployConfig);
+
+
+    }
+
+    private void setUpDeployConfig(JSONObject deployConfig) {
+        if (null == deployConfig) {
+            this.deployToK8s = false;
+        } else {
+
+            this.kubectlLocation = deployConfig.getString("kubectlLocation");
+            if (null == kubectlLocation || "".equals(this.kubectlLocation)) {
+//                throw new IllegalStateException("kubectlLocation is null");
+            }
+            this.deployToK8s = true;
+        }
     }
 
     public String getMvnCommand() {
@@ -61,6 +79,7 @@ public class IntegrationBuilder extends Builder {
         return deletePushedImage;
     }
 
+
     /**
      * Builder start
      */
@@ -77,6 +96,13 @@ public class IntegrationBuilder extends Builder {
             throw new RuntimeException(e);
         }
         return true;
+    }
+
+    /**
+     * 部署镜像到远端
+     */
+    private void deployToRemote(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws Exception {
+
     }
 
     @Override
