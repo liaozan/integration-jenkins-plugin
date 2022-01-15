@@ -15,7 +15,6 @@ import net.sf.json.JSONObject;
 import org.apache.commons.io.output.TeeOutputStream;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
-import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
 
@@ -36,31 +35,16 @@ public class IntegrationBuilder extends Builder {
     private final Boolean buildImage;
     private final Boolean pushImage;
     private final Boolean deletePushedImage;
-    private Boolean deployToK8s;
-    private String configLocation;
+    private final Boolean deployToK8s;
+    private final String configLocation;
 
-    @DataBoundConstructor
-    public IntegrationBuilder(String mvnCommand, Boolean buildImage, Boolean pushImage, Boolean deletePushedImage, JSONObject deployConfig) {
+    public IntegrationBuilder(String mvnCommand, Boolean buildImage, Boolean pushImage, Boolean deletePushedImage, String configLocation) {
         this.mvnCommand = Util.fixNull(mvnCommand);
         this.buildImage = Util.fixNull(buildImage, true);
         this.pushImage = Util.fixNull(pushImage, true);
         this.deletePushedImage = Util.fixNull(deletePushedImage, true);
-        setUpDeployConfig(deployConfig);
-
-
-    }
-
-    private void setUpDeployConfig(JSONObject deployConfig) {
-        if (null == deployConfig) {
-            this.deployToK8s = false;
-        } else {
-
-            this.configLocation = deployConfig.getString("configLocation");
-            if (null == configLocation || "".equals(this.configLocation)) {
-//                throw new IllegalStateException("kubectlLocation is null");
-            }
-            this.deployToK8s = true;
-        }
+        this.configLocation = Util.fixNull(configLocation);
+        this.deployToK8s = StringUtils.isNotBlank(this.configLocation);
     }
 
     public String getMvnCommand() {
@@ -78,7 +62,6 @@ public class IntegrationBuilder extends Builder {
     public Boolean getDeletePushedImage() {
         return deletePushedImage;
     }
-
 
     /**
      * Builder start
@@ -98,16 +81,18 @@ public class IntegrationBuilder extends Builder {
         return true;
     }
 
-    /**
-     * 部署镜像到远端
-     */
-    private void deployToRemote(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws Exception {
-
-    }
-
     @Override
     public IntegrationDescriptor getDescriptor() {
         return (IntegrationDescriptor) super.getDescriptor();
+    }
+
+    /**
+     * 部署镜像到远端
+     */
+    private void deployToRemote(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) {
+        if (deployToK8s) {
+            System.out.println(configLocation);
+        }
     }
 
     /**
@@ -240,7 +225,7 @@ public class IntegrationBuilder extends Builder {
         }
 
         @Override
-        public boolean isApplicable(Class<? extends AbstractProject> aClass) {
+        public boolean isApplicable(Class<? extends AbstractProject> clazz) {
             return true;
         }
 
@@ -254,6 +239,17 @@ public class IntegrationBuilder extends Builder {
                 return FormValidation.error("Maven命令不能为空");
             }
             return FormValidation.ok();
+        }
+
+        @Override
+        public Builder newInstance(StaplerRequest req, JSONObject formData) {
+            String mvnCommand = formData.getString("mvnCommand");
+            boolean buildImage = formData.getBoolean("buildImage");
+            boolean pushImage = formData.getBoolean("pushImage");
+            boolean deletePushedImage = formData.getBoolean("deletePushedImage");
+            JSONObject deployConfig = formData.getJSONObject("deployConfig");
+            String configLocation = deployConfig.getString("configLocation");
+            return new IntegrationBuilder(mvnCommand, buildImage, pushImage, deletePushedImage, configLocation);
         }
 
         @Override
