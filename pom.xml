@@ -30,11 +30,6 @@
             <artifactId>localization-zh-cn</artifactId>
             <version>1.0.24</version>
         </dependency>
-        <dependency>
-            <groupId>org.jenkins-ci.plugins</groupId>
-            <artifactId>docker-commons</artifactId>
-            <version>1.18</version>
-        </dependency>
     </dependencies>
 
     <build>
