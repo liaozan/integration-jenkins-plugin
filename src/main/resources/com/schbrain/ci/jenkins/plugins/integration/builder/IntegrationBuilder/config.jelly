@@ -23,8 +23,8 @@
     <f:block>
         <table>
             <f:optionalBlock field="deployConfig" title="是否部署到k8s" >
-                <f:entry title="kubectl位置">
-                    <f:textbox field="kubectlLocation" />
+                <f:entry title="kubectl config位置">
+                    <f:textbox field="configLocation" />
                 </f:entry>
             </f:optionalBlock>
         </table>

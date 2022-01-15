@@ -37,7 +37,7 @@ public class IntegrationBuilder extends Builder {
     private final Boolean pushImage;
     private final Boolean deletePushedImage;
     private Boolean deployToK8s;
-    private String kubectlLocation;
+    private String configLocation;
 
     @DataBoundConstructor
     public IntegrationBuilder(String mvnCommand, Boolean buildImage, Boolean pushImage, Boolean deletePushedImage, JSONObject deployConfig) {
@@ -55,8 +55,8 @@ public class IntegrationBuilder extends Builder {
             this.deployToK8s = false;
         } else {
 
-            this.kubectlLocation = deployConfig.getString("kubectlLocation");
-            if (null == kubectlLocation || "".equals(this.kubectlLocation)) {
+            this.configLocation = deployConfig.getString("configLocation");
+            if (null == configLocation || "".equals(this.configLocation)) {
 //                throw new IllegalStateException("kubectlLocation is null");
             }
             this.deployToK8s = true;
