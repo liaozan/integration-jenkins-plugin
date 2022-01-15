@@ -1,12 +1,18 @@
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form" xmlns:c="/lib/credentials">
-    <f:entry title="Git地址" field="gitRepositoryUrl">
+<j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form">
+    <f:entry title="Maven命令" field="mvnCommand">
         <f:textbox/>
     </f:entry>
-    <f:entry title="Git分支" field="gitRepositoryBranch">
-        <f:textbox/>
+    <f:entry title="是否构建镜像" field="buildImage">
+        <f:radio name="buildImage" title="是" value="true" checked="${instance.buildImage}"/>
+        <f:radio name="buildImage" title="否" value="false" checked="${instance.buildImage == null || instance.buildImage == false}"/>
     </f:entry>
-    <f:entry title="凭据" field="credentialId">
-        <c:select includeUser="true"/>
+    <f:entry title="是否推送镜像" field="pushImage">
+        <f:radio name="pushImage" title="是" value="true" checked="${instance.pushImage}"/>
+        <f:radio name="pushImage" title="否" value="false" checked="${instance.pushImage == null || instance.pushImage == false}"/>
+    </f:entry>
+    <f:entry title="是否删除已推送的镜像" field="deletePushedImage">
+        <f:radio name="deletePushedImage" title="是" value="true" checked="${instance.deletePushedImage}"/>
+        <f:radio name="deletePushedImage" title="否" value="false" checked="${instance.deletePushedImage == null || instance.deletePushedImage == false}"/>
     </f:entry>
 </j:jelly>

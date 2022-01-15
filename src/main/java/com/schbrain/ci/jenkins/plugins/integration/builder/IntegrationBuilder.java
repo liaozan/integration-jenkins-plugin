@@ -1,46 +1,30 @@
 package com.schbrain.ci.jenkins.plugins.integration.builder;
 
-import com.cloudbees.plugins.credentials.CredentialsProvider;
-import com.cloudbees.plugins.credentials.common.StandardCredentials;
-import com.cloudbees.plugins.credentials.common.StandardListBoxModel;
-import hudson.EnvVars;
-import hudson.Extension;
-import hudson.FilePath;
-import hudson.Launcher;
+import hudson.*;
 import hudson.Launcher.ProcStarter;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.BuildListener;
-import hudson.model.Item;
-import hudson.plugins.git.BranchSpec;
-import hudson.plugins.git.GitSCM;
-import hudson.plugins.git.UserRemoteConfig;
-import hudson.scm.SCMRevisionState;
-import hudson.security.ACL;
 import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.Builder;
 import hudson.tasks.Maven;
 import hudson.tasks.Maven.MavenInstallation;
 import hudson.util.FormValidation;
-import hudson.util.ListBoxModel;
 import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
 import org.apache.commons.io.output.TeeOutputStream;
 import org.apache.commons.lang.ArrayUtils;
-import org.jenkinsci.plugins.gitclient.GitClient;
-import org.kohsuke.stapler.AncestorInPath;
+import org.apache.commons.lang.StringUtils;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
-import org.springframework.util.StringUtils;
 
-import java.io.*;
-import java.util.Collections;
-import java.util.List;
+import javax.annotation.Nullable;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.PrintStream;
 import java.util.NoSuchElementException;
-import java.util.Optional;
-
-import static java.util.Collections.emptyList;
 
 /**
  * @author liaozan
@@ -49,35 +33,44 @@ import static java.util.Collections.emptyList;
 @SuppressWarnings("unused")
 public class IntegrationBuilder extends Builder {
 
-    private final String gitRepositoryUrl;
-    private final String gitRepositoryBranch;
-    private final String credentialId;
+    private final String mvnCommand;
+    private final Boolean buildImage;
+    private final Boolean pushImage;
+    private final Boolean deletePushedImage;
 
     @DataBoundConstructor
-    public IntegrationBuilder(String gitRepositoryUrl, String gitRepositoryBranch, String credentialId) {
-        this.gitRepositoryUrl = gitRepositoryUrl;
-        this.gitRepositoryBranch = gitRepositoryBranch;
-        this.credentialId = credentialId;
+    public IntegrationBuilder(String mvnCommand, Boolean buildImage, Boolean pushImage, Boolean deletePushedImage) {
+        this.mvnCommand = Util.fixNull(mvnCommand);
+        this.buildImage = Util.fixNull(buildImage, true);
+        this.pushImage = Util.fixNull(pushImage, true);
+        this.deletePushedImage = Util.fixNull(deletePushedImage, true);
     }
 
-    public String getGitRepositoryUrl() {
-        return gitRepositoryUrl;
+    public String getMvnCommand() {
+        return mvnCommand;
     }
 
-    public String getGitRepositoryBranch() {
-        return gitRepositoryBranch;
+    public Boolean getBuildImage() {
+        return buildImage;
     }
 
-    public String getCredentialId() {
-        return credentialId;
+    public Boolean getPushImage() {
+        return pushImage;
+    }
+
+    public Boolean getDeletePushedImage() {
+        return deletePushedImage;
     }
 
     @Override
-    public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
-        checkout(build, launcher, listener);
-        mavenBuild(build, launcher, listener);
-        String imageName = lookupImageName(build, listener);
-        listener.getLogger().println("imageName: " + imageName);
+    public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) {
+        try {
+            checkWorkspace(build.getWorkspace());
+            // mavenBuild(build, launcher, listener);
+            clean(build, launcher, listener);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
         return true;
     }
 
@@ -86,15 +79,43 @@ public class IntegrationBuilder extends Builder {
         return (IntegrationDescriptor) super.getDescriptor();
     }
 
-    private String lookupImageName(AbstractBuild<?, ?> build, BuildListener listener) throws IOException, InterruptedException {
-        FilePath workspace = getWorkspace(build);
-        FilePath[] fileList = workspace.list("**/**/image-name");
-        if (fileList.length == 0) {
-            throw new FileNotFoundException("image-name");
+    private void clean(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws Exception {
+        if (deletePushedImage) {
+            PrintStream logger = listener.getLogger();
+            logger.println("delete pushed image...");
+            String imageName = lookupImageName(build, listener);
+            if (imageName == null) {
+                return;
+            }
+            ProcStarter dockerProcess = launcher
+                    .launch()
+                    .cmdAsSingleString(String.format("docker rmi -f %s", imageName));
+            executeWithLogger(logger, dockerProcess);
         }
+
+    }
+
+    private void checkWorkspace(@Nullable FilePath workspace) throws Exception {
+        if (workspace == null) {
+            throw new IllegalStateException("workspace is null");
+        }
+        if (!workspace.exists()) {
+            throw new IllegalStateException("workspace is not exist");
+        }
+    }
+
+    @Nullable
+    private String lookupImageName(AbstractBuild<?, ?> build, BuildListener listener) throws IOException, InterruptedException {
+        String imageNameFileName = "image-name";
+        FilePath workspace = getWorkspace(build);
+        FilePath[] fileList = workspace.list("**/**/" + imageNameFileName);
         PrintStream logger = listener.getLogger();
+        if (fileList.length == 0) {
+            logger.println("could not found matched file: " + imageNameFileName);
+            return null;
+        }
         for (FilePath filePath : fileList) {
-            logger.println("found matched file " + filePath.readToString());
+            logger.println("found matched file " + filePath);
         }
         if (fileList.length > 1) {
             logger.println("expect match one, but found " + fileList.length + " return the first one");
@@ -110,7 +131,7 @@ public class IntegrationBuilder extends Builder {
         return workspace;
     }
 
-    private void mavenBuild(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws IOException, InterruptedException {
+    private void mavenBuild(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws Exception {
         MavenInstallation installation;
         MavenInstallation[] installations = Jenkins.get().getDescriptorByType(Maven.DescriptorImpl.class).getInstallations();
         if (ArrayUtils.isEmpty(installations)) {
@@ -120,29 +141,29 @@ public class IntegrationBuilder extends Builder {
         }
 
         EnvVars environment = build.getEnvironment(listener);
-        EnvVars envVars = new EnvVars();
-        envVars.putAllNonNull(environment);
-        installation.buildEnvVars(envVars);
+        installation.buildEnvVars(environment);
 
+        String mavenCommand = buildMavenCommand(build, environment);
         ProcStarter mvnProcess = launcher
                 .launch()
                 .pwd(getWorkspace(build))
-                .cmdAsSingleString("mvn clean package -U -DrunInLocal=false -Ddockerfile.push.skip=true")
-                .envs(envVars);
+                .cmdAsSingleString(mavenCommand)
+                .envs(environment);
         executeWithLogger(listener.getLogger(), mvnProcess);
     }
 
-    private void checkout(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws IOException, InterruptedException {
-        SCMRevisionState revisionState = Optional.ofNullable(build.getPreviousBuild())
-                .map(prev -> prev.getAction(SCMRevisionState.class))
-                .orElse(null);
-        List<UserRemoteConfig> remoteConfigs = GitSCM.createRepoList(gitRepositoryUrl, credentialId);
-        GitSCM git = new GitSCM(remoteConfigs, branchSpecs(), null, null, emptyList());
-        git.checkout(build, launcher, build.getWorkspace(), listener, null, revisionState);
+    private String buildMavenCommand(AbstractBuild<?, ?> build, EnvVars environment) {
+        StringBuilder mavenCommand = new StringBuilder(getMvnCommand())
+                .append(buildSystemEnv("dockerfile.build.skip=" + !buildImage))
+                .append(buildSystemEnv("dockerfile.push.skip=" + !pushImage));
+        if (buildImage) {
+            mavenCommand.append(buildSystemEnv("dockerfile.tag=" + build.getId()));
+        }
+        return mavenCommand.toString();
     }
 
-    private List<BranchSpec> branchSpecs() {
-        return Collections.singletonList(new BranchSpec(gitRepositoryBranch));
+    private String buildSystemEnv(String option) {
+        return String.format(" -D%s ", option);
     }
 
     private void executeWithLogger(OutputStream outputStream, ProcStarter starter) throws IOException, InterruptedException {
@@ -153,65 +174,33 @@ public class IntegrationBuilder extends Builder {
 
     // can not move outside builder class
     @Extension
-    @SuppressWarnings({"unused", "deprecation"})
+    @SuppressWarnings({"unused"})
     public static class IntegrationDescriptor extends BuildStepDescriptor<Builder> {
 
         public IntegrationDescriptor() {
             load();
         }
 
+        @Override
         public boolean isApplicable(Class<? extends AbstractProject> aClass) {
             return true;
         }
 
-        /**
-         * This human readable name is used in the configuration screen.
-         */
+        @Override
         public String getDisplayName() {
             return "发布集成";
+        }
+
+        public FormValidation doCheckMvnCommand(@QueryParameter String value) {
+            if (StringUtils.isEmpty(value)) {
+                return FormValidation.error("mvnCommand is empty");
+            }
+            return FormValidation.ok();
         }
 
         @Override
         public boolean configure(StaplerRequest req, JSONObject formData) throws FormException {
             return super.configure(req, formData);
-        }
-
-        public FormValidation doCheckGitRepositoryUrl(@QueryParameter String value) {
-            if (!StringUtils.hasText(value)) {
-                return FormValidation.error("gitRepositoryUrl is empty");
-            }
-            return FormValidation.ok();
-        }
-
-        public FormValidation doCheckGitRepositoryBranch(@QueryParameter String value) {
-            if (!StringUtils.hasText(value)) {
-                return FormValidation.error("gitRepositoryBranch is empty");
-            }
-            return FormValidation.ok();
-        }
-
-        public FormValidation doCheckCredentialId(@QueryParameter String value) {
-            if (!StringUtils.hasText(value)) {
-                return FormValidation.error("credentialId is empty");
-            }
-            return FormValidation.ok();
-        }
-
-        public ListBoxModel doFillCredentialIdItems(@AncestorInPath Item item, @QueryParameter String credentialsId) {
-            StandardListBoxModel result = new StandardListBoxModel();
-            if (item == null) {
-                if (!Jenkins.get().hasPermission(Jenkins.ADMINISTER)) {
-                    return result.includeCurrentValue(credentialsId);
-                }
-            } else {
-                if (!item.hasPermission(Item.EXTENDED_READ)
-                        && !item.hasPermission(CredentialsProvider.USE_ITEM)) {
-                    return result.includeCurrentValue(credentialsId);
-                }
-            }
-            return result.includeEmptyValue()
-                    .includeMatchingAs(ACL.SYSTEM, item, StandardCredentials.class, emptyList(), GitClient.CREDENTIALS_MATCHER)
-                    .includeCurrentValue(credentialsId);
         }
 
     }
