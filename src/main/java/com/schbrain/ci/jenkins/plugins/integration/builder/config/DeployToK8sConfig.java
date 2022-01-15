@@ -1,6 +1,6 @@
 package com.schbrain.ci.jenkins.plugins.integration.builder.config;
 
-import com.schbrain.ci.jenkins.plugins.integration.builder.Entry;
+import com.schbrain.ci.jenkins.plugins.integration.builder.config.entry.Entry;
 import hudson.Extension;
 import hudson.model.AbstractDescribableImpl;
 import hudson.model.Descriptor;
@@ -14,7 +14,6 @@ import java.util.List;
  * @author liaozan
  * @since 2022/1/16
  */
-@SuppressWarnings("unused")
 public class DeployToK8sConfig extends AbstractDescribableImpl<DeployToK8sConfig> {
 
     private final List<Entry> entries;
@@ -36,6 +35,7 @@ public class DeployToK8sConfig extends AbstractDescribableImpl<DeployToK8sConfig
     }
 
     @Extension
+    @SuppressWarnings("unused")
     public static class DescriptorImpl extends Descriptor<DeployToK8sConfig> {
 
     }

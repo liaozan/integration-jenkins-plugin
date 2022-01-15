@@ -1,4 +1,4 @@
-package com.schbrain.ci.jenkins.plugins.integration.builder;
+package com.schbrain.ci.jenkins.plugins.integration.builder.config.entry;
 
 import hudson.model.AbstractDescribableImpl;
 

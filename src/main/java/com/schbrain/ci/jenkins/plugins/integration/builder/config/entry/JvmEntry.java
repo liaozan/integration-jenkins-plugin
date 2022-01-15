@@ -1,6 +1,5 @@
-package com.schbrain.ci.jenkins.plugins.integration.builder.config;
+package com.schbrain.ci.jenkins.plugins.integration.builder.config.entry;
 
-import com.schbrain.ci.jenkins.plugins.integration.builder.Entry;
 import hudson.Extension;
 import hudson.model.Descriptor;
 import org.kohsuke.stapler.DataBoundConstructor;
@@ -10,12 +9,12 @@ import org.kohsuke.stapler.DataBoundConstructor;
  * @since 2022/1/16
  */
 @SuppressWarnings("unused")
-public class K8sEnvEntry extends Entry {
+public class JvmEntry extends Entry {
 
     private final String text;
 
     @DataBoundConstructor
-    public K8sEnvEntry(String text) {
+    public JvmEntry(String text) {
         this.text = text;
     }
 
@@ -28,7 +27,7 @@ public class K8sEnvEntry extends Entry {
 
         @Override
         public String getDisplayName() {
-            return "k8s环境变量配置";
+            return "Jvm配置";
         }
 
     }

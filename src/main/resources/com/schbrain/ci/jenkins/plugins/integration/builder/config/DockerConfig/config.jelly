@@ -1,0 +1,27 @@
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form">
+
+    <f:entry/>
+
+    <f:entry title="构建镜像" field="buildImage">
+        <f:radio name="buildImage" title="是" value="true" checked="${instance.buildImage || instance.buildImage == null}"/>
+        <f:radio name="buildImage" title="否" value="false" checked="${instance.buildImage == false}"/>
+    </f:entry>
+
+    <f:entry title="推送镜像" field="pushImage">
+        <f:radio name="pushImage" title="是" value="true" checked="${instance.pushImage || instance.pushImage == null}"/>
+        <f:radio name="pushImage" title="否" value="false" checked="${instance.pushImage == false}"/>
+    </f:entry>
+
+    <f:entry title="镜像仓库" field="registry">
+        <f:textbox/>
+    </f:entry>
+
+    <f:entry title="构建完成后删除镜像" field="deleteImageAfterBuild">
+        <f:radio name="deleteImageAfterBuild" title="是" value="true" checked="${instance.deleteImageAfterBuild || instance.deleteImageAfterBuild == null}"/>
+        <f:radio name="deleteImageAfterBuild" title="否" value="false" checked="${instance.deleteImageAfterBuild == false}"/>
+    </f:entry>
+
+    <f:entry/>
+
+</j:jelly>

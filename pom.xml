@@ -30,6 +30,11 @@
             <artifactId>localization-zh-cn</artifactId>
             <version>1.0.24</version>
         </dependency>
+        <dependency>
+            <groupId>cn.hutool</groupId>
+            <artifactId>hutool-all</artifactId>
+            <version>5.7.19</version>
+        </dependency>
     </dependencies>
 
     <build>
