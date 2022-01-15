@@ -1,0 +1,19 @@
+Manifest-Version: 1.0
+Archiver-Version: Plexus Archiver
+Created-By: Apache Maven
+Built-By: danielbeck
+Build-Jdk: 1.8.0_121
+Extension-Name: localization-support
+Specification-Title: The Jenkins Plugins Parent POM Project
+Implementation-Title: localization-support
+Implementation-Version: 1.1
+Group-Id: io.jenkins.plugins
+Short-Name: localization-support
+Long-Name: Localization Support Plugin
+Url: https://wiki.jenkins.io/display/JENKINS/Localization+Support+Plugin
+Minimum-Java-Version: 1.8
+Plugin-Version: 1.1
+Hudson-Version: 2.173
+Jenkins-Version: 2.173
+Plugin-Developers: 
+

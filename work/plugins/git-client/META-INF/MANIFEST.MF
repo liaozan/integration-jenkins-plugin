@@ -1,0 +1,27 @@
+Manifest-Version: 1.0
+Hudson-Version: 2.289.1
+Plugin-Dependencies: configuration-as-code:1.54;resolution:=optional,a
+ pache-httpcomponents-client-4-api:4.5.13-1.0,credentials:2.6.1,jsch:0
+ .1.55.2,script-security:1.78,ssh-credentials:1.19,structs:1.23,trilea
+ d-api:1.0.13
+Implementation-Title: git-client
+Long-Name: Jenkins Git client plugin
+Implementation-Version: 3.11.0
+Group-Id: org.jenkins-ci.plugins
+Minimum-Java-Version: 1.8
+Plugin-License-Name: The MIT License (MIT)
+Specification-Title: Utility plugin for Git support in Jenkins
+Plugin-ScmUrl: https://github.com/jenkinsci/git-client-plugin
+Plugin-Version: 3.11.0
+Jenkins-Version: 2.289.1
+Url: https://github.com/jenkinsci/git-client-plugin/blob/master/README
+ .adoc
+Short-Name: git-client
+Plugin-License-Url: https://opensource.org/licenses/MIT
+Plugin-Developers: Mark Waite:markewaite:mark.earl.waite@gmail.com,Rob
+ ert Sandell:rsandell:rsandell@cloudbees.com,M Ramon Leon:mramonleon:r
+ leon@cloudbees.com,Olivier Lamy:olamy:olamy@apache.org
+Extension-Name: git-client
+Build-Jdk-Spec: 1.8
+Created-By: Maven Archiver 3.5.1
+

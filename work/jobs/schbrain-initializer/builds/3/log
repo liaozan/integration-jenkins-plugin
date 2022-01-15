@@ -1,0 +1,439 @@
+Started by user unknown or anonymous
+Running as SYSTEM
+Building in workspace /Users/liaozan/IdeaProjects/integration/work/workspace/schbrain-initializer
+The recommended git tool is: NONE
+using credential gitee
+ > git rev-parse --resolve-git-dir /Users/liaozan/IdeaProjects/integration/work/workspace/schbrain-initializer/.git # timeout=10
+Fetching changes from the remote Git repository
+ > git config remote.origin.url https://gitee.com/witbox/schbrain-initializer.git # timeout=10
+Fetching upstream changes from https://gitee.com/witbox/schbrain-initializer.git
+ > git --version # timeout=10
+ > git --version # 'git version 2.34.1'
+using GIT_ASKPASS to set credentials gitee
+ > git fetch --tags --force --progress -- https://gitee.com/witbox/schbrain-initializer.git +refs/heads/*:refs/remotes/origin/* # timeout=10
+ > git rev-parse origin/main^{commit} # timeout=10
+Checking out Revision 0339bfd0a7a405706c1d74944cc5c1034f6b2104 (origin/main)
+ > git config core.sparsecheckout # timeout=10
+ > git checkout -f 0339bfd0a7a405706c1d74944cc5c1034f6b2104 # timeout=10
+Commit message: "Initial commit"
+[schbrain-initializer] $ mvn clean package -U -DrunInLocal=false -Ddockerfile.push.skip=true
+[INFO] Scanning for projects...
+Downloading from libs-snapshots: https://maven.schbrain.com/repository/maven-snapshots/com/schbrain/framework/schbrain-parent/1.0.0-SNAPSHOT/maven-metadata.xml
+Progress (1): 616 B                   Downloaded from libs-snapshots: https://maven.schbrain.com/repository/maven-snapshots/com/schbrain/framework/schbrain-parent/1.0.0-SNAPSHOT/maven-metadata.xml (616 B at 1.7 kB/s)
+[INFO] ------------------------------------------------------------------------
+[INFO] Reactor Build Order:
+[INFO] 
+[INFO] schbrain-initializer                                               [pom]
+[INFO] schbrain-initializer-common                                        [jar]
+[INFO] schbrain-initializer-api                                           [jar]
+[INFO] schbrain-initializer-dao                                           [jar]
+[INFO] schbrain-initializer-service                                       [jar]
+[INFO] schbrain-initializer-api-impl                                      [jar]
+[INFO] schbrain-initializer-web                                           [jar]
+[INFO] 
+[INFO] ------< com.schbrain.framework.initializer:schbrain-initializer >-------
+[INFO] Building schbrain-initializer 1.0.0-SNAPSHOT                       [1/7]
+[INFO] --------------------------------[ pom ]---------------------------------
+[INFO] 
+[INFO] --- maven-clean-plugin:3.1.0:clean (default-clean) @ schbrain-initializer ---
+[INFO] Deleting /Users/liaozan/IdeaProjects/integration/work/workspace/schbrain-initializer/target
+[INFO] 
+[INFO] --- git-commit-id-plugin:4.9.10:revision (default) @ schbrain-initializer ---
+[INFO] 
+[INFO] --- flatten-maven-plugin:1.2.7:flatten (flatten) @ schbrain-initializer ---
+[INFO] Generating flattened POM of project com.schbrain.framework.initializer:schbrain-initializer:pom:1.0.0-SNAPSHOT...
+[INFO] 
+[INFO] --- git-commit-id-plugin:4.9.10:revision (commitInfo) @ schbrain-initializer ---
+[INFO] 
+[INFO] --- maven-resources-plugin:3.2.0:copy-resources (copy-resources) @ schbrain-initializer ---
+[INFO] Using 'UTF-8' encoding to copy filtered resources.
+[INFO] Using 'UTF-8' encoding to copy filtered properties files.
+[INFO] skip non existing resourceDirectory /Users/liaozan/IdeaProjects/integration/work/workspace/schbrain-initializer/target/classes/META-INF
+[INFO] 
+[INFO] --- maven-source-plugin:3.2.1:jar-no-fork (source) @ schbrain-initializer ---
+[INFO] 
+[INFO] ---< com.schbrain.framework.initializer:schbrain-initializer-common >---
+[INFO] Building schbrain-initializer-common 1.0.0-SNAPSHOT                [2/7]
+[INFO] --------------------------------[ jar ]---------------------------------
+Downloading from libs-snapshots: https://maven.schbrain.com/repository/maven-snapshots/com/schbrain/common/common/1.0.1-SNAPSHOT/maven-metadata.xml
+Progress (1): 989 B                   Downloaded from libs-snapshots: https://maven.schbrain.com/repository/maven-snapshots/com/schbrain/common/common/1.0.1-SNAPSHOT/maven-metadata.xml (989 B at 18 kB/s)
+Downloading from libs-snapshots: https://maven.schbrain.com/repository/maven-snapshots/com/schbrain/common/schbrain-common/1.0.1-SNAPSHOT/maven-metadata.xml
+Progress (1): 611 B                   Downloaded from libs-snapshots: https://maven.schbrain.com/repository/maven-snapshots/com/schbrain/common/schbrain-common/1.0.1-SNAPSHOT/maven-metadata.xml (611 B at 9.5 kB/s)
+[INFO] 
+[INFO] --- maven-clean-plugin:3.1.0:clean (default-clean) @ schbrain-initializer-common ---
+[INFO] Deleting /Users/liaozan/IdeaProjects/integration/work/workspace/schbrain-initializer/schbrain-initializer-common/target
+[INFO] 
+[INFO] --- git-commit-id-plugin:4.9.10:revision (default) @ schbrain-initializer-common ---
+[INFO] 
+[INFO] --- maven-resources-plugin:3.2.0:resources (default-resources) @ schbrain-initializer-common ---
+[INFO] Using 'UTF-8' encoding to copy filtered resources.
+[INFO] Using 'UTF-8' encoding to copy filtered properties files.
+[INFO] skip non existing resourceDirectory /Users/liaozan/IdeaProjects/integration/work/workspace/schbrain-initializer/schbrain-initializer-common/src/main/resources
+[INFO] skip non existing resourceDirectory /Users/liaozan/IdeaProjects/integration/work/workspace/schbrain-initializer/schbrain-initializer-common/src/main/resources
+[INFO] 
+[INFO] --- flatten-maven-plugin:1.2.7:flatten (flatten) @ schbrain-initializer-common ---
+[INFO] Generating flattened POM of project com.schbrain.framework.initializer:schbrain-initializer-common:jar:1.0.0-SNAPSHOT...
+[INFO] 
+[INFO] --- maven-compiler-plugin:3.8.1:compile (default-compile) @ schbrain-initializer-common ---
+[INFO] No sources to compile
+[INFO] 
+[INFO] --- git-commit-id-plugin:4.9.10:revision (commitInfo) @ schbrain-initializer-common ---
+[INFO] 
+[INFO] --- maven-resources-plugin:3.2.0:copy-resources (copy-resources) @ schbrain-initializer-common ---
+[INFO] Using 'UTF-8' encoding to copy filtered resources.
+[INFO] Using 'UTF-8' encoding to copy filtered properties files.
+[INFO] skip non existing resourceDirectory /Users/liaozan/IdeaProjects/integration/work/workspace/schbrain-initializer/schbrain-initializer-common/target/classes/META-INF
+[INFO] 
+[INFO] --- maven-resources-plugin:3.2.0:testResources (default-testResources) @ schbrain-initializer-common ---
+[INFO] Using 'UTF-8' encoding to copy filtered resources.
+[INFO] Using 'UTF-8' encoding to copy filtered properties files.
+[INFO] skip non existing resourceDirectory /Users/liaozan/IdeaProjects/integration/work/workspace/schbrain-initializer/schbrain-initializer-common/src/test/resources
+[INFO] 
+[INFO] --- maven-compiler-plugin:3.8.1:testCompile (default-testCompile) @ schbrain-initializer-common ---
+[INFO] No sources to compile
+[INFO] 
+[INFO] --- maven-surefire-plugin:2.22.2:test (default-test) @ schbrain-initializer-common ---
+[INFO] No tests to run.
+[INFO] 
+[INFO] --- maven-jar-plugin:3.2.0:jar (default-jar) @ schbrain-initializer-common ---
+[INFO] Building jar: /Users/liaozan/IdeaProjects/integration/work/workspace/schbrain-initializer/schbrain-initializer-common/target/schbrain-initializer-common-1.0.0-SNAPSHOT.jar
+[INFO] 
+[INFO] --- maven-source-plugin:3.2.1:jar-no-fork (source) @ schbrain-initializer-common ---
+[INFO] No sources in project. Archive not created.
+[INFO] 
+[INFO] ----< com.schbrain.framework.initializer:schbrain-initializer-api >-----
+[INFO] Building schbrain-initializer-api 1.0.0-SNAPSHOT                   [3/7]
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- maven-clean-plugin:3.1.0:clean (default-clean) @ schbrain-initializer-api ---
+[INFO] Deleting /Users/liaozan/IdeaProjects/integration/work/workspace/schbrain-initializer/schbrain-initializer-api/target
+[INFO] 
+[INFO] --- git-commit-id-plugin:4.9.10:revision (default) @ schbrain-initializer-api ---
+[INFO] 
+[INFO] --- maven-resources-plugin:3.2.0:resources (default-resources) @ schbrain-initializer-api ---
+[INFO] Using 'UTF-8' encoding to copy filtered resources.
+[INFO] Using 'UTF-8' encoding to copy filtered properties files.
+[INFO] skip non existing resourceDirectory /Users/liaozan/IdeaProjects/integration/work/workspace/schbrain-initializer/schbrain-initializer-api/src/main/resources
+[INFO] skip non existing resourceDirectory /Users/liaozan/IdeaProjects/integration/work/workspace/schbrain-initializer/schbrain-initializer-api/src/main/resources
+[INFO] 
+[INFO] --- flatten-maven-plugin:1.2.7:flatten (flatten) @ schbrain-initializer-api ---
+[INFO] Generating flattened POM of project com.schbrain.framework.initializer:schbrain-initializer-api:jar:1.0.0-SNAPSHOT...
+[INFO] 
+[INFO] --- maven-compiler-plugin:3.8.1:compile (default-compile) @ schbrain-initializer-api ---
+[INFO] No sources to compile
+[INFO] 
+[INFO] --- git-commit-id-plugin:4.9.10:revision (commitInfo) @ schbrain-initializer-api ---
+[INFO] 
+[INFO] --- maven-resources-plugin:3.2.0:copy-resources (copy-resources) @ schbrain-initializer-api ---
+[INFO] Using 'UTF-8' encoding to copy filtered resources.
+[INFO] Using 'UTF-8' encoding to copy filtered properties files.
+[INFO] skip non existing resourceDirectory /Users/liaozan/IdeaProjects/integration/work/workspace/schbrain-initializer/schbrain-initializer-api/target/classes/META-INF
+[INFO] 
+[INFO] --- maven-resources-plugin:3.2.0:testResources (default-testResources) @ schbrain-initializer-api ---
+[INFO] Using 'UTF-8' encoding to copy filtered resources.
+[INFO] Using 'UTF-8' encoding to copy filtered properties files.
+[INFO] skip non existing resourceDirectory /Users/liaozan/IdeaProjects/integration/work/workspace/schbrain-initializer/schbrain-initializer-api/src/test/resources
+[INFO] 
+[INFO] --- maven-compiler-plugin:3.8.1:testCompile (default-testCompile) @ schbrain-initializer-api ---
+[INFO] No sources to compile
+[INFO] 
+[INFO] --- maven-surefire-plugin:2.22.2:test (default-test) @ schbrain-initializer-api ---
+[INFO] No tests to run.
+[INFO] 
+[INFO] --- maven-jar-plugin:3.2.0:jar (default-jar) @ schbrain-initializer-api ---
+[INFO] Building jar: /Users/liaozan/IdeaProjects/integration/work/workspace/schbrain-initializer/schbrain-initializer-api/target/schbrain-initializer-api-1.0.0-SNAPSHOT.jar
+[INFO] 
+[INFO] --- maven-source-plugin:3.2.1:jar-no-fork (source) @ schbrain-initializer-api ---
+[INFO] No sources in project. Archive not created.
+[INFO] 
+[INFO] ----< com.schbrain.framework.initializer:schbrain-initializer-dao >-----
+[INFO] Building schbrain-initializer-dao 1.0.0-SNAPSHOT                   [4/7]
+[INFO] --------------------------------[ jar ]---------------------------------
+Downloading from libs-snapshots: https://maven.schbrain.com/repository/maven-snapshots/com/schbrain/framework/mybatis-spring-boot-starter/1.0.1-SNAPSHOT/maven-metadata.xml
+Progress (1): 1.0 kB                    Downloaded from libs-snapshots: https://maven.schbrain.com/repository/maven-snapshots/com/schbrain/framework/mybatis-spring-boot-starter/1.0.1-SNAPSHOT/maven-metadata.xml (1.0 kB at 15 kB/s)
+Downloading from libs-snapshots: https://maven.schbrain.com/repository/maven-snapshots/com/schbrain/framework/schbrain-spring-support/1.0.1-SNAPSHOT/maven-metadata.xml
+Progress (1): 1.0 kB                    Downloaded from libs-snapshots: https://maven.schbrain.com/repository/maven-snapshots/com/schbrain/framework/schbrain-spring-support/1.0.1-SNAPSHOT/maven-metadata.xml (1.0 kB at 19 kB/s)
+[INFO] 
+[INFO] --- maven-clean-plugin:3.1.0:clean (default-clean) @ schbrain-initializer-dao ---
+[INFO] Deleting /Users/liaozan/IdeaProjects/integration/work/workspace/schbrain-initializer/schbrain-initializer-dao/target
+[INFO] 
+[INFO] --- git-commit-id-plugin:4.9.10:revision (default) @ schbrain-initializer-dao ---
+[INFO] 
+[INFO] --- maven-resources-plugin:3.2.0:resources (default-resources) @ schbrain-initializer-dao ---
+[INFO] Using 'UTF-8' encoding to copy filtered resources.
+[INFO] Using 'UTF-8' encoding to copy filtered properties files.
+[INFO] skip non existing resourceDirectory /Users/liaozan/IdeaProjects/integration/work/workspace/schbrain-initializer/schbrain-initializer-dao/src/main/resources
+[INFO] skip non existing resourceDirectory /Users/liaozan/IdeaProjects/integration/work/workspace/schbrain-initializer/schbrain-initializer-dao/src/main/resources
+[INFO] 
+[INFO] --- flatten-maven-plugin:1.2.7:flatten (flatten) @ schbrain-initializer-dao ---
+[INFO] Generating flattened POM of project com.schbrain.framework.initializer:schbrain-initializer-dao:jar:1.0.0-SNAPSHOT...
+[INFO] 
+[INFO] --- maven-compiler-plugin:3.8.1:compile (default-compile) @ schbrain-initializer-dao ---
+[INFO] No sources to compile
+[INFO] 
+[INFO] --- git-commit-id-plugin:4.9.10:revision (commitInfo) @ schbrain-initializer-dao ---
+[INFO] 
+[INFO] --- maven-resources-plugin:3.2.0:copy-resources (copy-resources) @ schbrain-initializer-dao ---
+[INFO] Using 'UTF-8' encoding to copy filtered resources.
+[INFO] Using 'UTF-8' encoding to copy filtered properties files.
+[INFO] skip non existing resourceDirectory /Users/liaozan/IdeaProjects/integration/work/workspace/schbrain-initializer/schbrain-initializer-dao/target/classes/META-INF
+[INFO] 
+[INFO] --- maven-resources-plugin:3.2.0:testResources (default-testResources) @ schbrain-initializer-dao ---
+[INFO] Using 'UTF-8' encoding to copy filtered resources.
+[INFO] Using 'UTF-8' encoding to copy filtered properties files.
+[INFO] skip non existing resourceDirectory /Users/liaozan/IdeaProjects/integration/work/workspace/schbrain-initializer/schbrain-initializer-dao/src/test/resources
+[INFO] 
+[INFO] --- maven-compiler-plugin:3.8.1:testCompile (default-testCompile) @ schbrain-initializer-dao ---
+[INFO] No sources to compile
+[INFO] 
+[INFO] --- maven-surefire-plugin:2.22.2:test (default-test) @ schbrain-initializer-dao ---
+[INFO] No tests to run.
+[INFO] 
+[INFO] --- maven-jar-plugin:3.2.0:jar (default-jar) @ schbrain-initializer-dao ---
+[INFO] Building jar: /Users/liaozan/IdeaProjects/integration/work/workspace/schbrain-initializer/schbrain-initializer-dao/target/schbrain-initializer-dao-1.0.0-SNAPSHOT.jar
+[INFO] 
+[INFO] --- maven-source-plugin:3.2.1:jar-no-fork (source) @ schbrain-initializer-dao ---
+[INFO] No sources in project. Archive not created.
+[INFO] 
+[INFO] --< com.schbrain.framework.initializer:schbrain-initializer-service >---
+[INFO] Building schbrain-initializer-service 1.0.0-SNAPSHOT               [5/7]
+[INFO] --------------------------------[ jar ]---------------------------------
+Downloading from libs-snapshots: https://maven.schbrain.com/repository/maven-snapshots/com/schbrain/framework/logger-spring-boot-starter/1.0.1-SNAPSHOT/maven-metadata.xml
+Progress (1): 1.0 kB                    Downloaded from libs-snapshots: https://maven.schbrain.com/repository/maven-snapshots/com/schbrain/framework/logger-spring-boot-starter/1.0.1-SNAPSHOT/maven-metadata.xml (1.0 kB at 22 kB/s)
+Downloading from libs-snapshots: https://maven.schbrain.com/repository/maven-snapshots/com/schbrain/framework/apollo-spring-boot-starter/1.0.1-SNAPSHOT/maven-metadata.xml
+Progress (1): 1.0 kB                    Downloaded from libs-snapshots: https://maven.schbrain.com/repository/maven-snapshots/com/schbrain/framework/apollo-spring-boot-starter/1.0.1-SNAPSHOT/maven-metadata.xml (1.0 kB at 16 kB/s)
+Downloading from libs-snapshots: https://maven.schbrain.com/repository/maven-snapshots/com/schbrain/framework/dubbo-spring-boot-starter/1.0.1-SNAPSHOT/maven-metadata.xml
+Progress (1): 1.0 kB                    Downloaded from libs-snapshots: https://maven.schbrain.com/repository/maven-snapshots/com/schbrain/framework/dubbo-spring-boot-starter/1.0.1-SNAPSHOT/maven-metadata.xml (1.0 kB at 19 kB/s)
+Downloading from libs-snapshots: https://maven.schbrain.com/repository/maven-snapshots/com/schbrain/framework/xxl-job-spring-boot-starter/1.0.0-SNAPSHOT/maven-metadata.xml
+Progress (1): 1.0 kB                    Downloaded from libs-snapshots: https://maven.schbrain.com/repository/maven-snapshots/com/schbrain/framework/xxl-job-spring-boot-starter/1.0.0-SNAPSHOT/maven-metadata.xml (1.0 kB at 14 kB/s)
+Downloading from libs-snapshots: https://maven.schbrain.com/repository/maven-snapshots/com/schbrain/framework/oss-spring-boot-starter/1.0.1-SNAPSHOT/maven-metadata.xml
+Progress (1): 1.0 kB                    Downloaded from libs-snapshots: https://maven.schbrain.com/repository/maven-snapshots/com/schbrain/framework/oss-spring-boot-starter/1.0.1-SNAPSHOT/maven-metadata.xml (1.0 kB at 22 kB/s)
+[INFO] 
+[INFO] --- maven-clean-plugin:3.1.0:clean (default-clean) @ schbrain-initializer-service ---
+[INFO] Deleting /Users/liaozan/IdeaProjects/integration/work/workspace/schbrain-initializer/schbrain-initializer-service/target
+[INFO] 
+[INFO] --- git-commit-id-plugin:4.9.10:revision (default) @ schbrain-initializer-service ---
+[INFO] 
+[INFO] --- maven-resources-plugin:3.2.0:resources (default-resources) @ schbrain-initializer-service ---
+[INFO] Using 'UTF-8' encoding to copy filtered resources.
+[INFO] Using 'UTF-8' encoding to copy filtered properties files.
+[INFO] skip non existing resourceDirectory /Users/liaozan/IdeaProjects/integration/work/workspace/schbrain-initializer/schbrain-initializer-service/src/main/resources
+[INFO] skip non existing resourceDirectory /Users/liaozan/IdeaProjects/integration/work/workspace/schbrain-initializer/schbrain-initializer-service/src/main/resources
+[INFO] 
+[INFO] --- flatten-maven-plugin:1.2.7:flatten (flatten) @ schbrain-initializer-service ---
+[INFO] Generating flattened POM of project com.schbrain.framework.initializer:schbrain-initializer-service:jar:1.0.0-SNAPSHOT...
+[INFO] 
+[INFO] --- maven-compiler-plugin:3.8.1:compile (default-compile) @ schbrain-initializer-service ---
+[INFO] No sources to compile
+[INFO] 
+[INFO] --- git-commit-id-plugin:4.9.10:revision (commitInfo) @ schbrain-initializer-service ---
+[INFO] 
+[INFO] --- maven-resources-plugin:3.2.0:copy-resources (copy-resources) @ schbrain-initializer-service ---
+[INFO] Using 'UTF-8' encoding to copy filtered resources.
+[INFO] Using 'UTF-8' encoding to copy filtered properties files.
+[INFO] skip non existing resourceDirectory /Users/liaozan/IdeaProjects/integration/work/workspace/schbrain-initializer/schbrain-initializer-service/target/classes/META-INF
+[INFO] 
+[INFO] --- maven-resources-plugin:3.2.0:testResources (default-testResources) @ schbrain-initializer-service ---
+[INFO] Using 'UTF-8' encoding to copy filtered resources.
+[INFO] Using 'UTF-8' encoding to copy filtered properties files.
+[INFO] skip non existing resourceDirectory /Users/liaozan/IdeaProjects/integration/work/workspace/schbrain-initializer/schbrain-initializer-service/src/test/resources
+[INFO] 
+[INFO] --- maven-compiler-plugin:3.8.1:testCompile (default-testCompile) @ schbrain-initializer-service ---
+[INFO] No sources to compile
+[INFO] 
+[INFO] --- maven-surefire-plugin:2.22.2:test (default-test) @ schbrain-initializer-service ---
+[INFO] No tests to run.
+[INFO] 
+[INFO] --- maven-jar-plugin:3.2.0:jar (default-jar) @ schbrain-initializer-service ---
+[INFO] Building jar: /Users/liaozan/IdeaProjects/integration/work/workspace/schbrain-initializer/schbrain-initializer-service/target/schbrain-initializer-service-1.0.0-SNAPSHOT.jar
+[INFO] 
+[INFO] --- maven-source-plugin:3.2.1:jar-no-fork (source) @ schbrain-initializer-service ---
+[INFO] No sources in project. Archive not created.
+[INFO] 
+[INFO] --< com.schbrain.framework.initializer:schbrain-initializer-api-impl >--
+[INFO] Building schbrain-initializer-api-impl 1.0.0-SNAPSHOT              [6/7]
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- maven-clean-plugin:3.1.0:clean (default-clean) @ schbrain-initializer-api-impl ---
+[INFO] Deleting /Users/liaozan/IdeaProjects/integration/work/workspace/schbrain-initializer/schbrain-initializer-api-impl/target
+[INFO] 
+[INFO] --- git-commit-id-plugin:4.9.10:revision (default) @ schbrain-initializer-api-impl ---
+[INFO] 
+[INFO] --- maven-resources-plugin:3.2.0:resources (default-resources) @ schbrain-initializer-api-impl ---
+[INFO] Using 'UTF-8' encoding to copy filtered resources.
+[INFO] Using 'UTF-8' encoding to copy filtered properties files.
+[INFO] skip non existing resourceDirectory /Users/liaozan/IdeaProjects/integration/work/workspace/schbrain-initializer/schbrain-initializer-api-impl/src/main/resources
+[INFO] skip non existing resourceDirectory /Users/liaozan/IdeaProjects/integration/work/workspace/schbrain-initializer/schbrain-initializer-api-impl/src/main/resources
+[INFO] 
+[INFO] --- flatten-maven-plugin:1.2.7:flatten (flatten) @ schbrain-initializer-api-impl ---
+[INFO] Generating flattened POM of project com.schbrain.framework.initializer:schbrain-initializer-api-impl:jar:1.0.0-SNAPSHOT...
+[INFO] 
+[INFO] --- maven-compiler-plugin:3.8.1:compile (default-compile) @ schbrain-initializer-api-impl ---
+[INFO] No sources to compile
+[INFO] 
+[INFO] --- git-commit-id-plugin:4.9.10:revision (commitInfo) @ schbrain-initializer-api-impl ---
+[INFO] 
+[INFO] --- maven-resources-plugin:3.2.0:copy-resources (copy-resources) @ schbrain-initializer-api-impl ---
+[INFO] Using 'UTF-8' encoding to copy filtered resources.
+[INFO] Using 'UTF-8' encoding to copy filtered properties files.
+[INFO] skip non existing resourceDirectory /Users/liaozan/IdeaProjects/integration/work/workspace/schbrain-initializer/schbrain-initializer-api-impl/target/classes/META-INF
+[INFO] 
+[INFO] --- maven-resources-plugin:3.2.0:testResources (default-testResources) @ schbrain-initializer-api-impl ---
+[INFO] Using 'UTF-8' encoding to copy filtered resources.
+[INFO] Using 'UTF-8' encoding to copy filtered properties files.
+[INFO] skip non existing resourceDirectory /Users/liaozan/IdeaProjects/integration/work/workspace/schbrain-initializer/schbrain-initializer-api-impl/src/test/resources
+[INFO] 
+[INFO] --- maven-compiler-plugin:3.8.1:testCompile (default-testCompile) @ schbrain-initializer-api-impl ---
+[INFO] No sources to compile
+[INFO] 
+[INFO] --- maven-surefire-plugin:2.22.2:test (default-test) @ schbrain-initializer-api-impl ---
+[INFO] No tests to run.
+[INFO] 
+[INFO] --- maven-jar-plugin:3.2.0:jar (default-jar) @ schbrain-initializer-api-impl ---
+[INFO] Building jar: /Users/liaozan/IdeaProjects/integration/work/workspace/schbrain-initializer/schbrain-initializer-api-impl/target/schbrain-initializer-api-impl-1.0.0-SNAPSHOT.jar
+[INFO] 
+[INFO] --- maven-source-plugin:3.2.1:jar-no-fork (source) @ schbrain-initializer-api-impl ---
+[INFO] No sources in project. Archive not created.
+[INFO] 
+[INFO] ----< com.schbrain.framework.initializer:schbrain-initializer-web >-----
+[INFO] Building schbrain-initializer-web 1.0.0-SNAPSHOT                   [7/7]
+[INFO] --------------------------------[ jar ]---------------------------------
+Downloading from libs-snapshots: https://maven.schbrain.com/repository/maven-snapshots/com/schbrain/common/web-common/1.0.1-SNAPSHOT/maven-metadata.xml
+Progress (1): 993 B                   Downloaded from libs-snapshots: https://maven.schbrain.com/repository/maven-snapshots/com/schbrain/common/web-common/1.0.1-SNAPSHOT/maven-metadata.xml (993 B at 14 kB/s)
+[INFO] 
+[INFO] --- maven-clean-plugin:3.1.0:clean (default-clean) @ schbrain-initializer-web ---
+[INFO] Deleting /Users/liaozan/IdeaProjects/integration/work/workspace/schbrain-initializer/schbrain-initializer-web/target
+[INFO] 
+[INFO] --- git-commit-id-plugin:4.9.10:revision (default) @ schbrain-initializer-web ---
+[INFO] 
+[INFO] --- maven-resources-plugin:3.2.0:resources (default-resources) @ schbrain-initializer-web ---
+[INFO] Using 'UTF-8' encoding to copy filtered resources.
+[INFO] Using 'UTF-8' encoding to copy filtered properties files.
+[INFO] Copying 3 resources
+[INFO] Copying 0 resource
+[INFO] 
+[INFO] --- flatten-maven-plugin:1.2.7:flatten (flatten) @ schbrain-initializer-web ---
+[INFO] Generating flattened POM of project com.schbrain.framework.initializer:schbrain-initializer-web:jar:1.0.0-SNAPSHOT...
+[INFO] 
+[INFO] --- maven-compiler-plugin:3.8.1:compile (default-compile) @ schbrain-initializer-web ---
+[INFO] Changes detected - recompiling the module!
+[INFO] Compiling 1 source file to /Users/liaozan/IdeaProjects/integration/work/workspace/schbrain-initializer/schbrain-initializer-web/target/classes
+[INFO] 
+[INFO] --- git-commit-id-plugin:4.9.10:revision (commitInfo) @ schbrain-initializer-web ---
+[INFO] 
+[INFO] --- maven-resources-plugin:3.2.0:copy-resources (copy-resources) @ schbrain-initializer-web ---
+[INFO] Using 'UTF-8' encoding to copy filtered resources.
+[INFO] Using 'UTF-8' encoding to copy filtered properties files.
+[INFO] skip non existing resourceDirectory /Users/liaozan/IdeaProjects/integration/work/workspace/schbrain-initializer/schbrain-initializer-web/target/classes/META-INF
+[INFO] 
+[INFO] --- spring-boot-maven-plugin:2.6.2:build-info (buildInfo) @ schbrain-initializer-web ---
+[INFO] 
+[INFO] --- maven-resources-plugin:3.2.0:testResources (default-testResources) @ schbrain-initializer-web ---
+[INFO] Using 'UTF-8' encoding to copy filtered resources.
+[INFO] Using 'UTF-8' encoding to copy filtered properties files.
+[INFO] skip non existing resourceDirectory /Users/liaozan/IdeaProjects/integration/work/workspace/schbrain-initializer/schbrain-initializer-web/src/test/resources
+[INFO] 
+[INFO] --- maven-compiler-plugin:3.8.1:testCompile (default-testCompile) @ schbrain-initializer-web ---
+[INFO] No sources to compile
+[INFO] 
+[INFO] --- maven-surefire-plugin:2.22.2:test (default-test) @ schbrain-initializer-web ---
+[INFO] No tests to run.
+[INFO] 
+[INFO] --- maven-jar-plugin:3.2.0:jar (default-jar) @ schbrain-initializer-web ---
+[INFO] Building jar: /Users/liaozan/IdeaProjects/integration/work/workspace/schbrain-initializer/schbrain-initializer-web/target/schbrain-initializer-web-1.0.0-SNAPSHOT.jar
+[INFO] 
+[INFO] --- maven-source-plugin:3.2.1:jar-no-fork (source) @ schbrain-initializer-web ---
+[INFO] Building jar: /Users/liaozan/IdeaProjects/integration/work/workspace/schbrain-initializer/schbrain-initializer-web/target/schbrain-initializer-web-1.0.0-SNAPSHOT-sources.jar
+[INFO] 
+[INFO] --- spring-boot-maven-plugin:2.6.2:repackage (repackage) @ schbrain-initializer-web ---
+[INFO] Replacing main artifact with repackaged archive
+[INFO] 
+[INFO] --- integration-maven-plugin:1.0.0-SNAPSHOT:prepare-dockerfile (prepare-dockerfile) @ schbrain-initializer-web ---
+[INFO] Download Dockerfile template from http://gitlab.schbrain.com/gitlab/liaozan/helloworld.git, branch: main
+[INFO] Found file match the fileName: Dockerfile
+[INFO] Resolve Dockerfile placeholder, location: /Users/liaozan/IdeaProjects/integration/work/workspace/schbrain-initializer/schbrain-initializer-web/target/Dockerfile
+[INFO] Store prepared Dockerfile in /Users/liaozan/IdeaProjects/integration/work/workspace/schbrain-initializer/schbrain-initializer-web/target/Dockerfile
+[INFO] 
+[INFO] --- dockerfile-maven-plugin:1.4.13:build (buildImage) @ schbrain-initializer-web ---
+[INFO] Google Container Registry support is disabled
+[INFO] dockerfile: /Users/liaozan/IdeaProjects/integration/work/workspace/schbrain-initializer/schbrain-initializer-web/target/Dockerfile
+[INFO] contextDirectory: /Users/liaozan/IdeaProjects/integration/work/workspace/schbrain-initializer/schbrain-initializer-web
+[INFO] Building Docker context /Users/liaozan/IdeaProjects/integration/work/workspace/schbrain-initializer/schbrain-initializer-web
+[INFO] Path(dockerfile): /Users/liaozan/IdeaProjects/integration/work/workspace/schbrain-initializer/schbrain-initializer-web/target/Dockerfile
+[INFO] Path(contextDirectory): /Users/liaozan/IdeaProjects/integration/work/workspace/schbrain-initializer/schbrain-initializer-web
+[INFO] 
+[INFO] Image will be built as registry.cn-hangzhou.aliyuncs.com/schbrain-dev/schbrain-initializer:1.0.0-SNAPSHOT
+[INFO] 
+[INFO] Step 1/11 : FROM openjdk:11-jre-slim as builder
+[INFO] 
+[INFO]  ---> f9a276f9e80f
+[INFO] Step 2/11 : RUN mkdir -p /data/logs/schbrain-initializer
+[INFO] 
+[INFO]  ---> Using cache
+[INFO]  ---> db15b3fd1330
+[INFO] Step 3/11 : COPY target/schbrain-initializer-web-1.0.0-SNAPSHOT.jar schbrain-initializer.jar
+[INFO] 
+[INFO]  ---> 9675e0fd0c0f
+[INFO] Step 4/11 : RUN java -Djarmode=layertools -jar schbrain-initializer.jar extract
+[INFO] 
+[INFO]  ---> Running in d4e4fe14555f
+[INFO] Removing intermediate container d4e4fe14555f
+[INFO]  ---> 31d0fa6a2e19
+[INFO] Step 5/11 : FROM openjdk:11-jre-slim
+[INFO] 
+[INFO]  ---> f9a276f9e80f
+[INFO] Step 6/11 : COPY --from=builder dependencies/ ./
+[INFO] 
+[INFO]  ---> Using cache
+[INFO]  ---> aab568eb38fe
+[INFO] Step 7/11 : COPY --from=builder snapshot-dependencies/ ./
+[INFO] 
+[INFO]  ---> Using cache
+[INFO]  ---> 838db5dd284a
+[INFO] Step 8/11 : COPY --from=builder spring-boot-loader/ ./
+[INFO] 
+[INFO]  ---> Using cache
+[INFO]  ---> 50047c8ec918
+[INFO] Step 9/11 : COPY --from=builder application/ ./
+[INFO] 
+[INFO]  ---> d841c25d7c3a
+[INFO] Step 10/11 : RUN ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime && echo 'Asia/Shanghai' >/etc/timezone
+[INFO] 
+[INFO]  ---> Running in b48c16ddbfc7
+[INFO] Removing intermediate container b48c16ddbfc7
+[INFO]  ---> e7a0dfa0a3c3
+[INFO] Step 11/11 : ENTRYPOINT java org.springframework.boot.loader.JarLauncher --spring.profiles.active=dev
+[INFO] 
+[INFO]  ---> Running in daf0b505dcf0
+[INFO] Removing intermediate container daf0b505dcf0
+[INFO]  ---> 0a1d541255ae
+[INFO] Successfully built 0a1d541255ae
+[INFO] Successfully tagged registry.cn-hangzhou.aliyuncs.com/schbrain-dev/schbrain-initializer:1.0.0-SNAPSHOT
+[INFO] 
+[INFO] Detected build of image with id 0a1d541255ae
+[INFO] Successfully built registry.cn-hangzhou.aliyuncs.com/schbrain-dev/schbrain-initializer:1.0.0-SNAPSHOT
+[INFO] 
+[INFO] --- dockerfile-maven-plugin:1.4.13:push (pushImage) @ schbrain-initializer-web ---
+[INFO] Google Container Registry support is disabled
+[INFO] Skipping execution because 'dockerfile.push.skip' is set
+[INFO] ------------------------------------------------------------------------
+[INFO] Reactor Summary for schbrain-initializer 1.0.0-SNAPSHOT:
+[INFO] 
+[INFO] schbrain-initializer ............................... SUCCESS [  1.098 s]
+[INFO] schbrain-initializer-common ........................ SUCCESS [  1.604 s]
+[INFO] schbrain-initializer-api ........................... SUCCESS [  0.435 s]
+[INFO] schbrain-initializer-dao ........................... SUCCESS [  0.743 s]
+[INFO] schbrain-initializer-service ....................... SUCCESS [  1.108 s]
+[INFO] schbrain-initializer-api-impl ...................... SUCCESS [  0.485 s]
+[INFO] schbrain-initializer-web ........................... SUCCESS [ 16.656 s]
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  23.044 s
+[INFO] Finished at: 2022-01-15T14:16:18+08:00
+[INFO] ------------------------------------------------------------------------
+found matched file registry.cn-hangzhou.aliyuncs.com/schbrain-dev/schbrain-initializer:1.0.0-SNAPSHOT
+
+imageName: registry.cn-hangzhou.aliyuncs.com/schbrain-dev/schbrain-initializer:1.0.0-SNAPSHOT
+
+Finished: SUCCESS

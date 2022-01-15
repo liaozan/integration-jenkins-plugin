@@ -1,0 +1,24 @@
+Manifest-Version: 1.0
+Hudson-Version: 2.263.1
+Plugin-Dependencies: javax-activation-api:1.2.0-2
+Implementation-Title: javax-mail-api
+Long-Name: JavaMail API
+Implementation-Version: 1.6.2-5
+Group-Id: io.jenkins.plugins
+Minimum-Java-Version: 1.8
+Support-Dynamic-Loading: true
+Plugin-License-Name: CDDL-1.1
+Specification-Title: Plugin providing the JavaMail API for other plugi
+ ns
+Plugin-ScmUrl: https://github.com/jenkinsci/javax-mail-api-plugin
+Plugin-Version: 1.6.2-5
+Jenkins-Version: 2.263.1
+Url: https://github.com/jenkinsci/javax-mail-api-plugin
+Short-Name: javax-mail-api
+Plugin-License-Url: https://spdx.org/licenses/CDDL-1.1.html
+Plugin-Developers: 
+Extension-Name: javax-mail-api
+Mask-Classes: com.sun.mail.
+Build-Jdk-Spec: 1.8
+Created-By: Maven Archiver 3.5.1
+

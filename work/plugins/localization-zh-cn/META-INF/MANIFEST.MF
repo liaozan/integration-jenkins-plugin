@@ -1,0 +1,20 @@
+Manifest-Version: 1.0
+Archiver-Version: Plexus Archiver
+Created-By: Apache Maven
+Built-By: rick
+Build-Jdk: 1.8.0_252
+Extension-Name: localization-zh-cn
+Specification-Title: The Jenkins Plugins Parent POM Project
+Implementation-Title: localization-zh-cn
+Implementation-Version: 1.0.24
+Group-Id: org.jenkins-ci.plugins
+Short-Name: localization-zh-cn
+Long-Name: Localization: Chinese (Simplified)
+Url: https://github.com/jenkinsci/localization-zh-cn-plugin
+Minimum-Java-Version: 1.8
+Plugin-Version: 1.0.24
+Hudson-Version: 2.173
+Jenkins-Version: 2.173
+Plugin-Dependencies: localization-support:1.1
+Plugin-Developers: Zhao Xiaojie:linuxsuren:
+

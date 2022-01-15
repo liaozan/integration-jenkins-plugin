@@ -1,0 +1,22 @@
+Manifest-Version: 1.0
+Hudson-Version: 2.289.1
+Plugin-Dependencies: javax-mail-api:1.6.2-2,display-url-api:2.3.5
+Implementation-Title: mailer
+Long-Name: Jenkins Mailer Plugin
+Implementation-Version: 408.vd726a_1130320
+Group-Id: org.jenkins-ci.plugins
+Minimum-Java-Version: 1.8
+Plugin-License-Name: The MIT license
+Specification-Title: The Jenkins Plugins Parent POM Project
+Plugin-ScmUrl: https://github.com/jenkinsci/mailer-plugin
+Plugin-Version: 408.vd726a_1130320
+Jenkins-Version: 2.289.1
+Url: https://github.com/jenkinsci/mailer-plugin
+Short-Name: mailer
+Plugin-License-Url: https://opensource.org/licenses/MIT
+Plugin-Developers: 
+Extension-Name: mailer
+Plugin-Class: hudson.tasks.PluginImpl
+Build-Jdk-Spec: 1.8
+Created-By: Maven Archiver 3.5.1
+
