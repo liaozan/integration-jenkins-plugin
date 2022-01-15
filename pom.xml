@@ -11,7 +11,7 @@
     </parent>
 
     <groupId>com.schbrain.ci.jenkins.plugins</groupId>
-    <artifactId>integration</artifactId>
+    <artifactId>integration-jenkins-plugin</artifactId>
     <version>1.0</version>
     <packaging>hpi</packaging>
 
