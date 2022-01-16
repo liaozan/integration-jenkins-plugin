@@ -3,7 +3,6 @@ package com.schbrain.ci.jenkins.plugins.integration.builder;
 import com.schbrain.ci.jenkins.plugins.integration.builder.config.DeployToK8sConfig;
 import com.schbrain.ci.jenkins.plugins.integration.builder.config.DockerConfig;
 import com.schbrain.ci.jenkins.plugins.integration.builder.config.MavenConfig;
-import hudson.EnvVars;
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.Launcher;
@@ -125,8 +124,11 @@ public class IntegrationBuilder extends Builder {
             logger.println("maven command is empty, skip maven build");
             return;
         }
-        EnvVars envVars = contributeMavenEnvVars();
-        ProcStarter mavenProcess = createProc().cmdAsSingleString(mavenCommand).envs(envVars);
+        String mavenHome = getMavenHome();
+        if (mavenHome != null) {
+            mavenCommand = mavenHome + "/bin/" + mavenCommand;
+        }
+        ProcStarter mavenProcess = createProc().cmdAsSingleString(mavenCommand);
         execute(mavenProcess);
     }
 
@@ -227,20 +229,22 @@ public class IntegrationBuilder extends Builder {
     }
 
     /**
-     * Collect maven EnvVars, return empty if maven installations is not set up
+     * getMavenHome
      */
-    private EnvVars contributeMavenEnvVars() throws IOException, InterruptedException {
-        MavenInstallation installation;
+    private String getMavenHome() throws IOException, InterruptedException {
         MavenInstallation[] installations = Jenkins.get().getDescriptorByType(Maven.DescriptorImpl.class).getInstallations();
         if (ArrayUtils.isEmpty(installations)) {
-            // maven installations is not set up, return directly with empty envVar
-            return new EnvVars();
+            logger.println("maven installations is empty, will execute in workspace directly");
+            // maven installations is not set up, return directly with empty
         } else {
-            installation = installations[0];
-            EnvVars environment = build.getEnvironment(listener);
-            installation.buildEnvVars(environment);
-            return environment;
+            for (MavenInstallation installation : installations) {
+                installation = installation.forNode(build.getBuiltOn(), listener);
+                if (installation.getExists()) {
+                    return installation.getHome();
+                }
+            }
         }
+        return null;
     }
 
     private void execute(String command) throws Exception {
