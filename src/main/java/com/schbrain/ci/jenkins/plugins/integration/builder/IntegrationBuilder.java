@@ -41,6 +41,7 @@ public class IntegrationBuilder extends Builder {
     private BuildListener listener;
     private PrintStream logger;
 
+    @Nullable
     private Properties dockerBuildInfo;
 
     @DataBoundConstructor
@@ -87,6 +88,8 @@ public class IntegrationBuilder extends Builder {
             checkWorkspaceValid(build.getWorkspace());
             // maven build
             performMavenBuild();
+            // read dockerInfo
+            readDockerBuildInfo();
             // docker build
             performDockerBuild();
             // docker push
@@ -142,8 +145,11 @@ public class IntegrationBuilder extends Builder {
             logger.println("Dockerfile not exist, skip docker build");
             return;
         }
-        readDockerBuildInfo();
-        String command = String.format("docker build -t %s -f %s .", getFullImageName(), dockerfile);
+        String imageName = getFullImageName();
+        if (imageName == null) {
+            return;
+        }
+        String command = String.format("docker build -t %s -f %s .", imageName, dockerfile);
         execute(command);
     }
 
@@ -159,8 +165,17 @@ public class IntegrationBuilder extends Builder {
         }
     }
 
-    private void performDockerPush() {
-
+    private void performDockerPush() throws Exception {
+        if (!getDockerConfig().getPushImage()) {
+            logger.println("docker push is skipped");
+            return;
+        }
+        String imageName = getFullImageName();
+        if (imageName == null) {
+            return;
+        }
+        String command = String.format("docker push %s", imageName);
+        execute(command);
     }
 
     private void pruneImages() throws Exception {
@@ -198,7 +213,12 @@ public class IntegrationBuilder extends Builder {
         // TODO: 2022/1/16
     }
 
+    @Nullable
     private String getFullImageName() {
+        if (dockerBuildInfo == null) {
+            logger.println("docker build info is null");
+            return null;
+        }
         String registry = dockerConfig.getRegistry();
         if (StringUtils.isBlank(registry)) {
             registry = dockerBuildInfo.getProperty("REGISTRY");
