@@ -1,10 +1,13 @@
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form">
 
+    <f:entry/>
+
     <f:optionalProperty field="mavenConfig" title="Maven编译"/>
 
     <f:optionalProperty field="dockerConfig" title="Docker打包"/>
 
     <f:optionalProperty field="deployToK8sConfig" title="Kubernetes部署"/>
 
+    <f:entry/>
 </j:jelly>

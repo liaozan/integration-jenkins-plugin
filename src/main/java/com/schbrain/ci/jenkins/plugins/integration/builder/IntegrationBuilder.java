@@ -9,9 +9,8 @@ import hudson.FilePath;
 import hudson.Launcher;
 import hudson.Launcher.ProcStarter;
 import hudson.model.AbstractBuild;
-import hudson.model.AbstractProject;
 import hudson.model.BuildListener;
-import hudson.tasks.BuildStepDescriptor;
+import hudson.model.Descriptor;
 import hudson.tasks.Builder;
 import hudson.tasks.Maven;
 import hudson.tasks.Maven.MavenInstallation;
@@ -19,6 +18,7 @@ import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
 import org.apache.commons.io.output.TeeOutputStream;
 import org.apache.commons.lang.ArrayUtils;
+import org.apache.commons.lang.StringUtils;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.StaplerRequest;
 
@@ -42,7 +42,7 @@ public class IntegrationBuilder extends Builder {
     private BuildListener listener;
     private PrintStream logger;
 
-    private Properties projectInfo;
+    private Properties dockerBuildInfo;
 
     @DataBoundConstructor
     public IntegrationBuilder(MavenConfig mavenConfig, DockerConfig dockerConfig, DeployToK8sConfig deployToK8sConfig) {
@@ -120,33 +120,40 @@ public class IntegrationBuilder extends Builder {
      * Build project through maven
      */
     private void performMavenBuild() throws Exception {
-        EnvVars envVars = contributeMavenEnvVars();
         String mavenCommand = getMavenConfig().getMvnCommand();
+        if (StringUtils.isBlank(mavenCommand)) {
+            logger.println("maven command is empty, skip maven build");
+            return;
+        }
+        EnvVars envVars = contributeMavenEnvVars();
         ProcStarter mavenProcess = createProc().cmdAsSingleString(mavenCommand).envs(envVars);
         execute(mavenProcess);
     }
 
     private void performDockerBuild() throws Exception {
+        if (!getDockerConfig().getBuildImage()) {
+            logger.println("docker build is skipped");
+            return;
+        }
         FilePath dockerfile = lookupFile("Dockerfile");
         if (dockerfile == null) {
             logger.println("Dockerfile not exist, skip docker build");
             return;
         }
-        readProjectInfo();
-        String command = String.format("docker build -t %s -f %s .", getImageName(), dockerfile);
-        ProcStarter dockerBuildProc = createProc().cmdAsSingleString(command);
-        execute(dockerBuildProc);
+        readDockerBuildInfo();
+        String command = String.format("docker build -t %s -f %s .", getFullImageName(), dockerfile);
+        execute(command);
     }
 
-    private void readProjectInfo() throws IOException, InterruptedException {
-        if (projectInfo == null) {
-            FilePath variables = lookupFile("variables");
-            if (variables == null) {
-                logger.println("variables file not exist, skip docker build");
+    private void readDockerBuildInfo() throws IOException, InterruptedException {
+        if (dockerBuildInfo == null) {
+            FilePath lookupFile = lookupFile("dockerBuildInfo");
+            if (lookupFile == null) {
+                logger.println("dockerBuildInfo file not exist, skip docker build");
                 return;
             }
-            projectInfo = new Properties();
-            projectInfo.load(new StringReader(variables.readToString()));
+            this.dockerBuildInfo = new Properties();
+            this.dockerBuildInfo.load(new StringReader(lookupFile.readToString()));
         }
     }
 
@@ -155,8 +162,7 @@ public class IntegrationBuilder extends Builder {
     }
 
     private void pruneImages() throws Exception {
-        ProcStarter dockerImagePruneProcess = createProc().cmdAsSingleString("docker image prune -f");
-        execute(dockerImagePruneProcess);
+        execute("docker image prune -f");
     }
 
     private ProcStarter createProc() {
@@ -175,13 +181,12 @@ public class IntegrationBuilder extends Builder {
             return;
         }
         logger.println("try to delete built image");
-        String imageName = getImageName();
+        String imageName = getFullImageName();
         if (imageName == null) {
             return;
         }
         String command = String.format("docker rmi -f %s", imageName);
-        ProcStarter dockerRmiProcess = createProc().cmdAsSingleString(command);
-        execute(dockerRmiProcess);
+        execute(command);
     }
 
     /**
@@ -191,8 +196,14 @@ public class IntegrationBuilder extends Builder {
         // TODO: 2022/1/16
     }
 
-    private String getImageName() {
-        return String.format("%s/%s", dockerConfig.getRegistry(), projectInfo.getProperty("IMAGE_NAME"));
+    private String getFullImageName() {
+        String registry = dockerConfig.getRegistry();
+        if (StringUtils.isBlank(registry)) {
+            registry = dockerBuildInfo.getProperty("REGISTRY");
+        }
+        String appName = dockerBuildInfo.getProperty("APP_NAME");
+        String version = dockerBuildInfo.getProperty("VERSION");
+        return String.format("%s/%s:%s", registry, appName, version);
     }
 
     /**
@@ -211,6 +222,7 @@ public class IntegrationBuilder extends Builder {
         if (fileList.length > 1) {
             logger.println("expect match one, but found " + fileList.length + " return the first one");
         }
+        logger.println(fileList[0].readToString());
         return fileList[0];
     }
 
@@ -231,6 +243,11 @@ public class IntegrationBuilder extends Builder {
         }
     }
 
+    private void execute(String command) throws Exception {
+        ProcStarter process = createProc().cmdAsSingleString(command);
+        execute(process);
+    }
+
     private void execute(ProcStarter process) throws Exception {
         OutputStream stdout = new TeeOutputStream(logger, new ByteArrayOutputStream());
         OutputStream stderr = new TeeOutputStream(logger, new ByteArrayOutputStream());
@@ -240,15 +257,10 @@ public class IntegrationBuilder extends Builder {
     // can not move outside builder class
     @Extension
     @SuppressWarnings({"unused"})
-    public static class IntegrationDescriptor extends BuildStepDescriptor<Builder> {
+    public static class IntegrationDescriptor extends Descriptor<Builder> {
 
         public IntegrationDescriptor() {
             load();
-        }
-
-        @Override
-        public boolean isApplicable(Class<? extends AbstractProject> clazz) {
-            return true;
         }
 
         @Override
