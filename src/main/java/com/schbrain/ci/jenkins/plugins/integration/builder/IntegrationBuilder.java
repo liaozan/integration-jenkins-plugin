@@ -24,7 +24,6 @@ import org.kohsuke.stapler.StaplerRequest;
 import org.springframework.lang.Nullable;
 
 import java.io.*;
-import java.util.Optional;
 import java.util.Properties;
 
 /**
@@ -33,8 +32,11 @@ import java.util.Properties;
  */
 public class IntegrationBuilder extends Builder {
 
+    @Nullable
     private final MavenConfig mavenConfig;
+    @Nullable
     private final DockerConfig dockerConfig;
+    @Nullable
     private final DeployToK8sConfig deployToK8sConfig;
 
     private AbstractBuild<?, ?> build;
@@ -47,20 +49,25 @@ public class IntegrationBuilder extends Builder {
     private Properties dockerBuildInfo;
 
     @DataBoundConstructor
-    public IntegrationBuilder(MavenConfig mavenConfig, DockerConfig dockerConfig, DeployToK8sConfig deployToK8sConfig) {
+    public IntegrationBuilder(@Nullable MavenConfig mavenConfig,
+                              @Nullable DockerConfig dockerConfig,
+                              @Nullable DeployToK8sConfig deployToK8sConfig) {
         this.mavenConfig = mavenConfig;
         this.dockerConfig = dockerConfig;
         this.deployToK8sConfig = deployToK8sConfig;
     }
 
+    @CheckForNull
     public MavenConfig getMavenConfig() {
         return mavenConfig;
     }
 
+    @CheckForNull
     public DockerConfig getDockerConfig() {
         return dockerConfig;
     }
 
+    @CheckForNull
     public DeployToK8sConfig getDeployToK8sConfig() {
         return deployToK8sConfig;
     }
@@ -124,6 +131,10 @@ public class IntegrationBuilder extends Builder {
      * Build project through maven
      */
     private void performMavenBuild() throws Exception {
+        if (getMavenConfig() == null) {
+            logger.println("maven build is not checked");
+            return;
+        }
         String mavenCommand = getMavenConfig().getMvnCommand();
         if (StringUtils.isBlank(mavenCommand)) {
             logger.println("maven command is empty, skip maven build");
@@ -138,8 +149,12 @@ public class IntegrationBuilder extends Builder {
     }
 
     private void performDockerBuild() throws Exception {
+        if (getDockerConfig() == null) {
+            logger.println("docker build is not checked");
+            return;
+        }
         if (!getDockerConfig().getBuildImage()) {
-            logger.println("docker build is skipped");
+            logger.println("docker build image is skipped");
             return;
         }
         FilePath dockerfile = lookupFile("Dockerfile");
@@ -168,8 +183,12 @@ public class IntegrationBuilder extends Builder {
     }
 
     private void performDockerPush() throws Exception {
+        if (getDockerConfig() == null) {
+            logger.println("docker build is not checked");
+            return;
+        }
         if (!getDockerConfig().getPushImage()) {
-            logger.println("docker push is skipped");
+            logger.println("docker push image is skipped");
             return;
         }
         String imageName = getFullImageName();
@@ -181,6 +200,10 @@ public class IntegrationBuilder extends Builder {
     }
 
     private void pruneImages() throws Exception {
+        if (getDockerConfig() == null) {
+            logger.println("docker build is not checked");
+            return;
+        }
         execute("docker image prune -f");
     }
 
@@ -196,7 +219,12 @@ public class IntegrationBuilder extends Builder {
      * Delete the image produced in the build
      */
     private void deleteImageAfterBuild() throws Exception {
+        if (getDockerConfig() == null) {
+            logger.println("docker build is not checked");
+            return;
+        }
         if (!getDockerConfig().getDeleteImageAfterBuild()) {
+            logger.println("delete built image is skip");
             return;
         }
         logger.println("try to delete built image");
@@ -214,7 +242,7 @@ public class IntegrationBuilder extends Builder {
     private void deployToRemote() throws Exception {
         DeployToK8sConfig k8sConfig = getDeployToK8sConfig();
         if (null == k8sConfig) {
-            logger.println("not selected deploy to k8s .");
+            logger.println("k8s deploy is not checked");
             return;
         }
         String deployFileName = k8sConfig.getDeployFileName();
@@ -228,9 +256,10 @@ public class IntegrationBuilder extends Builder {
             logger.println("not specified location of k8s config ,will use default config .");
         }
 
-        String command = "kubectl " +
-                (StringUtils.isNotBlank(location) ? " --kubeconfig ".concat(location) : "") +
-                " apply -f ".concat(deployFileName);
+        String command = String.format("kubectl apply -f %s", deployFileName);
+        if (StringUtils.isNotBlank(location)) {
+            command = command + " --kubeconfig " + location;
+        }
 
         logger.println(command);
 
@@ -243,7 +272,11 @@ public class IntegrationBuilder extends Builder {
             logger.println("docker build info is null");
             return null;
         }
-        String registry = dockerConfig.getRegistry();
+        if (getDockerConfig() == null) {
+            logger.println("docker build step is not checked");
+            return null;
+        }
+        String registry = getDockerConfig().getRegistry();
         if (StringUtils.isBlank(registry)) {
             registry = dockerBuildInfo.getProperty("REGISTRY");
         }
