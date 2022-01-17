@@ -1,17 +1,16 @@
 package com.schbrain.ci.jenkins.plugins.integration.builder;
 
+import cn.hutool.core.util.StrUtil;
 import com.schbrain.ci.jenkins.plugins.integration.builder.config.DeployToK8sConfig;
 import com.schbrain.ci.jenkins.plugins.integration.builder.config.DockerConfig;
 import com.schbrain.ci.jenkins.plugins.integration.builder.config.MavenConfig;
 import com.schbrain.ci.jenkins.plugins.integration.builder.config.entry.Entry;
+import com.schbrain.ci.jenkins.plugins.integration.builder.env.EnvContributorRunListener.DockerBuildInfoAwareEnvironment;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
-import hudson.EnvVars;
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.Launcher;
-import hudson.model.AbstractBuild;
-import hudson.model.BuildListener;
-import hudson.model.Descriptor;
+import hudson.model.*;
 import hudson.tasks.Builder;
 import hudson.tasks.Maven;
 import hudson.tasks.Maven.MavenInstallation;
@@ -23,24 +22,24 @@ import org.apache.commons.lang.StringUtils;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.StaplerRequest;
 import org.springframework.lang.Nullable;
+import org.springframework.util.CollectionUtils;
 
 import java.io.IOException;
 import java.io.PrintStream;
 import java.io.StringReader;
 import java.nio.charset.StandardCharsets;
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+
+import static com.schbrain.ci.jenkins.plugins.integration.builder.util.FileUtils.lookupFile;
 
 /**
  * @author liaozan
  * @since 2022/1/14
  */
 public class IntegrationBuilder extends Builder {
-
-    private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
 
     @Nullable
     private final MavenConfig mavenConfig;
@@ -57,7 +56,6 @@ public class IntegrationBuilder extends Builder {
 
     @Nullable
     private Properties dockerBuildInfo;
-    private boolean alreadyRead;
 
     @DataBoundConstructor
     public IntegrationBuilder(@Nullable MavenConfig mavenConfig,
@@ -131,7 +129,7 @@ public class IntegrationBuilder extends Builder {
         }
     }
 
-    private void refreshEnv() throws InterruptedException, IOException {
+    private void refreshEnv() throws InterruptedException {
         execute("source /etc/profile");
     }
 
@@ -177,7 +175,7 @@ public class IntegrationBuilder extends Builder {
             logger.println("docker build image is skipped");
             return;
         }
-        FilePath dockerfile = lookupFile("Dockerfile");
+        FilePath dockerfile = lookupFile(workspace, "Dockerfile", logger);
         if (dockerfile == null) {
             logger.println("Dockerfile not exist, skip docker build");
             return;
@@ -192,7 +190,7 @@ public class IntegrationBuilder extends Builder {
 
     private void readDockerBuildInfo() throws IOException, InterruptedException {
         if (dockerBuildInfo == null) {
-            FilePath lookupFile = lookupFile("dockerBuildInfo");
+            FilePath lookupFile = lookupFile(workspace, "dockerBuildInfo", logger);
             if (lookupFile == null) {
                 logger.println("dockerBuildInfo file not exist, skip docker build");
                 return;
@@ -273,34 +271,37 @@ public class IntegrationBuilder extends Builder {
             logger.println("not specified location of k8s config ,will use default config .");
         }
 
-        handleDeployFilePlaceholder(k8sConfig, imageName);
+        resolveDeployFilePlaceholder(k8sConfig, imageName);
 
         String command = String.format("kubectl apply -f %s", deployFileName);
         if (StringUtils.isNotBlank(location)) {
             command = command + " --kubeconfig " + location;
         }
 
-        logger.println(command);
-
         execute(command);
     }
 
-    private void handleDeployFilePlaceholder(DeployToK8sConfig k8sConfig, String imageName) throws Exception {
+    private void resolveDeployFilePlaceholder(DeployToK8sConfig k8sConfig, String imageName) throws Exception {
         Map<String, String> param = new HashMap<>();
-        for (Entry entry : k8sConfig.getEntries()) {
-            entry.contribute(param);
+
+        List<Entry> entries = k8sConfig.getEntries();
+        if (!CollectionUtils.isEmpty(entries)) {
+            for (Entry entry : entries) {
+                entry.contribute(param);
+            }
         }
 
         param.put("IMAGE", imageName);
 
-        FilePath filePath = lookupFile(k8sConfig.getDeployFileName());
+        FilePath filePath = lookupFile(workspace, k8sConfig.getDeployFileName(), logger);
 
-        assert filePath != null;
+        if (filePath == null) {
+            return;
+        }
 
         String data = filePath.readToString();
-        for (Map.Entry<String, String> optionEntry : param.entrySet()) {
-            data = data.replaceAll(optionEntry.getKey(), optionEntry.getValue());
-        }
+        StrUtil.format(data, param);
+
         filePath.write(data, StandardCharsets.UTF_8.name());
     }
 
@@ -324,26 +325,6 @@ public class IntegrationBuilder extends Builder {
     }
 
     /**
-     * lookup the special file
-     */
-    @CheckForNull
-    private FilePath lookupFile(String fileName) throws IOException, InterruptedException {
-        FilePath[] fileList = workspace.list("**/" + fileName);
-        if (fileList.length == 0) {
-            logger.println("could not found matched file: " + fileName);
-            return null;
-        }
-        for (FilePath filePath : fileList) {
-            logger.println("found matched file " + filePath);
-        }
-        if (fileList.length > 1) {
-            logger.println("expect match one, but found " + fileList.length + " return the first one");
-        }
-        logger.println(fileList[0].readToString());
-        return fileList[0];
-    }
-
-    /**
      * getMavenHome
      */
     private String getMavenHome() throws IOException, InterruptedException {
@@ -362,13 +343,13 @@ public class IntegrationBuilder extends Builder {
         return null;
     }
 
-    private void execute(String command) throws InterruptedException, IOException {
+    private void execute(String command) throws InterruptedException {
+        logger.println(command);
         Shell shell = new Shell(command);
-        EnvVars envVars = build.getEnvironment(listener);
-        envVars.put("DATE", DATE_TIME_FORMATTER.format(LocalDate.now()));
-        if (getDockerBuildInfo() != null) {
-            for (String propertyName : getDockerBuildInfo().stringPropertyNames()) {
-                envVars.put(propertyName, getDockerBuildInfo().getProperty(propertyName));
+        EnvironmentList environments = build.getEnvironments();
+        for (Environment environment : environments) {
+            if (environment instanceof DockerBuildInfoAwareEnvironment) {
+                ((DockerBuildInfoAwareEnvironment) environment).setDockerInfo(getDockerBuildInfo());
             }
         }
         shell.perform(build, launcher, listener);

@@ -8,7 +8,7 @@
     </f:entry>
 
     <f:entry title="部署文件名称">
-        <f:textbox field="deployFileName"/>
+        <f:textbox field="deployFileName" default="k8s-deploy.yaml"/>
     </f:entry>
 
     <f:section title="yaml配置">
