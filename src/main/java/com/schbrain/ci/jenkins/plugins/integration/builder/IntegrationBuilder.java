@@ -5,6 +5,7 @@ import com.schbrain.ci.jenkins.plugins.integration.builder.config.DockerConfig;
 import com.schbrain.ci.jenkins.plugins.integration.builder.config.MavenConfig;
 import com.schbrain.ci.jenkins.plugins.integration.builder.config.entry.Entry;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
+import hudson.EnvVars;
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.Launcher;
@@ -27,6 +28,8 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.io.StringReader;
 import java.nio.charset.StandardCharsets;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
@@ -36,6 +39,8 @@ import java.util.Properties;
  * @since 2022/1/14
  */
 public class IntegrationBuilder extends Builder {
+
+    private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
 
     @Nullable
     private final MavenConfig mavenConfig;
@@ -52,6 +57,7 @@ public class IntegrationBuilder extends Builder {
 
     @Nullable
     private Properties dockerBuildInfo;
+    private boolean alreadyRead;
 
     @DataBoundConstructor
     public IntegrationBuilder(@Nullable MavenConfig mavenConfig,
@@ -75,6 +81,11 @@ public class IntegrationBuilder extends Builder {
     @CheckForNull
     public DeployToK8sConfig getDeployToK8sConfig() {
         return deployToK8sConfig;
+    }
+
+    @CheckForNull
+    public Properties getDockerBuildInfo() {
+        return dockerBuildInfo;
     }
 
     /**
@@ -120,7 +131,7 @@ public class IntegrationBuilder extends Builder {
         }
     }
 
-    private void refreshEnv() throws InterruptedException {
+    private void refreshEnv() throws InterruptedException, IOException {
         execute("source /etc/profile");
     }
 
@@ -295,7 +306,7 @@ public class IntegrationBuilder extends Builder {
 
     @CheckForNull
     private String getFullImageName() {
-        if (dockerBuildInfo == null) {
+        if (getDockerBuildInfo() == null) {
             logger.println("docker build info is null");
             return null;
         }
@@ -305,10 +316,10 @@ public class IntegrationBuilder extends Builder {
         }
         String registry = getDockerConfig().getRegistry();
         if (StringUtils.isBlank(registry)) {
-            registry = dockerBuildInfo.getProperty("REGISTRY");
+            registry = getDockerBuildInfo().getProperty("REGISTRY");
         }
-        String appName = dockerBuildInfo.getProperty("APP_NAME");
-        String version = dockerBuildInfo.getProperty("VERSION");
+        String appName = getDockerBuildInfo().getProperty("APP_NAME");
+        String version = getDockerBuildInfo().getProperty("VERSION");
         return String.format("%s/%s:%s", registry, appName, version);
     }
 
@@ -351,8 +362,15 @@ public class IntegrationBuilder extends Builder {
         return null;
     }
 
-    private void execute(String command) throws InterruptedException {
+    private void execute(String command) throws InterruptedException, IOException {
         Shell shell = new Shell(command);
+        EnvVars envVars = build.getEnvironment(listener);
+        envVars.put("DATE", DATE_TIME_FORMATTER.format(LocalDate.now()));
+        if (getDockerBuildInfo() != null) {
+            for (String propertyName : getDockerBuildInfo().stringPropertyNames()) {
+                envVars.put(propertyName, getDockerBuildInfo().getProperty(propertyName));
+            }
+        }
         shell.perform(build, launcher, listener);
     }
 

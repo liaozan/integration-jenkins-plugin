@@ -13,7 +13,7 @@
         <f:radio name="pushImage" title="否" value="false" checked="${instance.pushImage == false}"/>
     </f:entry>
 
-    <f:entry title="镜像仓库" field="registry">
+    <f:entry title="镜像仓库" field="registry" description="为空时默认获取 pom.xml 配置的仓库地址,如项目未指定,则采用 parent pom 中的默认值(根据 profile 区分)">
         <f:textbox/>
     </f:entry>
 
