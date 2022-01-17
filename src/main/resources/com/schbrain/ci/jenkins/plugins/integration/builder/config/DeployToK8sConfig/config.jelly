@@ -3,19 +3,17 @@
 
     <f:entry/>
 
-    <f:entry title="kubectl config位置">
-        <f:textbox field="location"/>
+    <f:entry title="kubectl --config">
+        <f:textbox field="configLocation" value="${instance.configLocation}"/>
     </f:entry>
 
     <f:entry title="部署文件名称">
-        <f:textbox field="deployFileName" default="k8s-deploy.yaml"/>
+        <f:textbox field="deployFileName" value="${instance.deployFileName}" default="k8s-deploy.yaml"/>
     </f:entry>
 
-    <f:section title="yaml配置">
-        <f:block>
-            <f:repeatableHeteroProperty field="entries" hasHeader="true"/>
-        </f:block>
-    </f:section>
+    <f:entry title="yaml配置">
+        <f:repeatableHeteroProperty field="entries" oneEach="true" hasHeader="true"/>
+    </f:entry>
 
     <f:entry/>
 

@@ -1,7 +1,7 @@
 package com.schbrain.ci.jenkins.plugins.integration.builder.config;
 
 import hudson.Extension;
-import hudson.model.AbstractDescribableImpl;
+import hudson.Util;
 import hudson.model.Descriptor;
 import org.kohsuke.stapler.DataBoundConstructor;
 
@@ -9,13 +9,18 @@ import org.kohsuke.stapler.DataBoundConstructor;
  * @author liaozan
  * @since 2022/1/16
  */
-public class MavenConfig extends AbstractDescribableImpl<MavenConfig> {
+@SuppressWarnings("unused")
+public class MavenConfig extends BuildConfig<MavenConfig> {
 
-    private final String mvnCommand;
+    private String mvnCommand;
+
+    public MavenConfig() {
+        setDisabled(true);
+    }
 
     @DataBoundConstructor
     public MavenConfig(String mvnCommand) {
-        this.mvnCommand = mvnCommand;
+        this.mvnCommand = Util.fixEmpty(mvnCommand);
     }
 
     public String getMvnCommand() {
@@ -23,7 +28,6 @@ public class MavenConfig extends AbstractDescribableImpl<MavenConfig> {
     }
 
     @Extension
-    @SuppressWarnings("unused")
     public static class DescriptorImpl extends Descriptor<MavenConfig> {
 
     }

@@ -26,9 +26,6 @@ public class FileUtils {
             logger.println("could not found matched file: " + fileName);
             return null;
         }
-        for (FilePath filePath : fileList) {
-            logger.println("found matched file " + filePath);
-        }
         if (fileList.length > 1) {
             logger.println("expect match one, but found " + fileList.length + " return the first one");
         }

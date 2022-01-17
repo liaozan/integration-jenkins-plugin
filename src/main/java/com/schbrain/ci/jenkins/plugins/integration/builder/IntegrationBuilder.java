@@ -10,6 +10,7 @@ import edu.umd.cs.findbugs.annotations.CheckForNull;
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.Launcher;
+import hudson.Util;
 import hudson.model.*;
 import hudson.tasks.Builder;
 import hudson.tasks.Maven;
@@ -41,11 +42,8 @@ import static com.schbrain.ci.jenkins.plugins.integration.builder.util.FileUtils
  */
 public class IntegrationBuilder extends Builder {
 
-    @Nullable
     private final MavenConfig mavenConfig;
-    @Nullable
     private final DockerConfig dockerConfig;
-    @Nullable
     private final DeployToK8sConfig deployToK8sConfig;
 
     private AbstractBuild<?, ?> build;
@@ -61,22 +59,19 @@ public class IntegrationBuilder extends Builder {
     public IntegrationBuilder(@Nullable MavenConfig mavenConfig,
                               @Nullable DockerConfig dockerConfig,
                               @Nullable DeployToK8sConfig deployToK8sConfig) {
-        this.mavenConfig = mavenConfig;
-        this.dockerConfig = dockerConfig;
-        this.deployToK8sConfig = deployToK8sConfig;
+        this.mavenConfig = Util.fixNull(mavenConfig, new MavenConfig());
+        this.dockerConfig = Util.fixNull(dockerConfig, new DockerConfig());
+        this.deployToK8sConfig = Util.fixNull(deployToK8sConfig, new DeployToK8sConfig());
     }
 
-    @CheckForNull
     public MavenConfig getMavenConfig() {
         return mavenConfig;
     }
 
-    @CheckForNull
     public DockerConfig getDockerConfig() {
         return dockerConfig;
     }
 
-    @CheckForNull
     public DeployToK8sConfig getDeployToK8sConfig() {
         return deployToK8sConfig;
     }
@@ -129,8 +124,7 @@ public class IntegrationBuilder extends Builder {
         }
     }
 
-    private void refreshEnv() throws InterruptedException {
-        execute("source /etc/profile");
+    private void refreshEnv() {
     }
 
     /**
@@ -167,7 +161,7 @@ public class IntegrationBuilder extends Builder {
     }
 
     private void performDockerBuild() throws Exception {
-        if (getDockerConfig() == null) {
+        if (getDockerConfig().isDisabled()) {
             logger.println("docker build is not checked");
             return;
         }
@@ -201,11 +195,11 @@ public class IntegrationBuilder extends Builder {
     }
 
     private void performDockerPush() throws Exception {
-        if (getDockerConfig() == null) {
+        if (getDockerConfig().isDisabled()) {
             logger.println("docker build is not checked");
             return;
         }
-        if (!getDockerConfig().getPushImage()) {
+        if (!getDockerConfig().getPushConfig().getPushImage()) {
             logger.println("docker push image is skipped");
             return;
         }
@@ -218,7 +212,7 @@ public class IntegrationBuilder extends Builder {
     }
 
     private void pruneImages() throws Exception {
-        if (getDockerConfig() == null) {
+        if (getDockerConfig().isDisabled()) {
             logger.println("docker build is not checked");
             return;
         }
@@ -229,7 +223,7 @@ public class IntegrationBuilder extends Builder {
      * Delete the image produced in the build
      */
     private void deleteImageAfterBuild() throws Exception {
-        if (getDockerConfig() == null) {
+        if (getDockerConfig().isDisabled()) {
             logger.println("docker build is not checked");
             return;
         }
@@ -251,7 +245,7 @@ public class IntegrationBuilder extends Builder {
      */
     private void deployToRemote() throws Exception {
         DeployToK8sConfig k8sConfig = getDeployToK8sConfig();
-        if (null == k8sConfig) {
+        if (k8sConfig.isDisabled()) {
             logger.println("k8s deploy is not checked");
             return;
         }
@@ -266,16 +260,16 @@ public class IntegrationBuilder extends Builder {
             return;
         }
 
-        String location = k8sConfig.getLocation();
-        if (null == location) {
-            logger.println("not specified location of k8s config ,will use default config .");
+        String configLocation = k8sConfig.getConfigLocation();
+        if (null == configLocation) {
+            logger.println("not specified configLocation of k8s config ,will use default config .");
         }
 
         resolveDeployFilePlaceholder(k8sConfig, imageName);
 
         String command = String.format("kubectl apply -f %s", deployFileName);
-        if (StringUtils.isNotBlank(location)) {
-            command = command + " --kubeconfig " + location;
+        if (StringUtils.isNotBlank(configLocation)) {
+            command = command + " --kubeconfig " + configLocation;
         }
 
         execute(command);
@@ -311,11 +305,11 @@ public class IntegrationBuilder extends Builder {
             logger.println("docker build info is null");
             return null;
         }
-        if (getDockerConfig() == null) {
+        if (getDockerConfig().isDisabled()) {
             logger.println("docker build step is not checked");
             return null;
         }
-        String registry = getDockerConfig().getRegistry();
+        String registry = getDockerConfig().getPushConfig().getRegistry();
         if (StringUtils.isBlank(registry)) {
             registry = getDockerBuildInfo().getProperty("REGISTRY");
         }
@@ -344,7 +338,6 @@ public class IntegrationBuilder extends Builder {
     }
 
     private void execute(String command) throws InterruptedException {
-        logger.println(command);
         Shell shell = new Shell(command);
         EnvironmentList environments = build.getEnvironments();
         for (Environment environment : environments) {

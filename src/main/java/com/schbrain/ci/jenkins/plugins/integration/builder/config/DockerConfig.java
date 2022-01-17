@@ -1,7 +1,7 @@
 package com.schbrain.ci.jenkins.plugins.integration.builder.config;
 
 import hudson.Extension;
-import hudson.model.AbstractDescribableImpl;
+import hudson.Util;
 import hudson.model.Descriptor;
 import org.kohsuke.stapler.DataBoundConstructor;
 
@@ -9,31 +9,30 @@ import org.kohsuke.stapler.DataBoundConstructor;
  * @author liaozan
  * @since 2022/1/16
  */
-public class DockerConfig extends AbstractDescribableImpl<DockerConfig> {
+@SuppressWarnings("unused")
+public class DockerConfig extends BuildConfig<DockerConfig> {
 
-    private final String registry;
-    private final Boolean buildImage;
-    private final Boolean pushImage;
-    private final Boolean deleteImageAfterBuild;
+    private Boolean buildImage;
+    private PushConfig pushConfig;
+    private Boolean deleteImageAfterBuild;
 
-    @DataBoundConstructor
-    public DockerConfig(String registry, Boolean buildImage, Boolean pushImage, Boolean deleteImageAfterBuild) {
-        this.registry = registry;
-        this.buildImage = buildImage;
-        this.pushImage = pushImage;
-        this.deleteImageAfterBuild = deleteImageAfterBuild;
+    public DockerConfig() {
+        setDisabled(true);
     }
 
-    public String getRegistry() {
-        return registry;
+    @DataBoundConstructor
+    public DockerConfig(Boolean buildImage, PushConfig pushConfig, Boolean deleteImageAfterBuild) {
+        this.buildImage = Util.fixNull(buildImage, false);
+        this.pushConfig = Util.fixNull(pushConfig, new PushConfig());
+        this.deleteImageAfterBuild = Util.fixNull(deleteImageAfterBuild, false);
+    }
+
+    public PushConfig getPushConfig() {
+        return pushConfig;
     }
 
     public Boolean getBuildImage() {
         return buildImage;
-    }
-
-    public Boolean getPushImage() {
-        return pushImage;
     }
 
     public Boolean getDeleteImageAfterBuild() {
@@ -41,8 +40,38 @@ public class DockerConfig extends AbstractDescribableImpl<DockerConfig> {
     }
 
     @Extension
-    @SuppressWarnings("unused")
     public static class DescriptorImpl extends Descriptor<DockerConfig> {
+
+    }
+
+    public static class PushConfig extends BuildConfig<PushConfig> {
+
+        private Boolean pushImage;
+        private String registry;
+
+        public PushConfig() {
+            setDisabled(true);
+        }
+
+        @DataBoundConstructor
+        public PushConfig(Boolean pushImage, String registry) {
+            this.pushImage = pushImage;
+            this.registry = registry;
+        }
+
+        public Boolean getPushImage() {
+            return pushImage;
+        }
+
+        public String getRegistry() {
+            return registry;
+        }
+
+        @Extension
+        @SuppressWarnings("unused")
+        public static class DescriptorImpl extends Descriptor<PushConfig> {
+
+        }
 
     }
 

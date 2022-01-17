@@ -3,13 +3,9 @@
 
     <f:entry/>
 
-    <f:entry description="以下配置都可以使用 jenkins 的环境变量"/>
-
     <f:optionalProperty field="mavenConfig" title="Maven编译"/>
 
-    <f:entry description="以下配置可以额外使用 maven build 产生的环境变量"/>
-
-    <f:optionalProperty field="dockerConfig" title="Docker打包"/>
+    <f:optionalProperty field="dockerConfig" title="Docker构建"/>
 
     <f:optionalProperty field="deployToK8sConfig" title="Kubernetes部署"/>
 

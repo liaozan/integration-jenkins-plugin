@@ -3,23 +3,27 @@
 
     <f:entry/>
 
-    <f:entry title="构建镜像" field="buildImage">
-        <f:radio name="buildImage" title="是" value="true" checked="${instance.buildImage || instance.buildImage == null}"/>
-        <f:radio name="buildImage" title="否" value="false" checked="${instance.buildImage == false}"/>
+    <f:entry>
+        <f:optionalBlock>
+            <f:checkbox title="构建镜像" field="buildImage" checked="${instance.buildImage}"/>
+        </f:optionalBlock>
     </f:entry>
 
-    <f:entry title="推送镜像" field="pushImage">
-        <f:radio name="pushImage" title="是" value="true" checked="${instance.pushImage || instance.pushImage == null}"/>
-        <f:radio name="pushImage" title="否" value="false" checked="${instance.pushImage == false}"/>
+    <f:entry>
+        <f:optionalBlock title="推送镜像" field="pushConfig" checked="${instance.pushConfig.pushImage}">
+            <f:invisibleEntry>
+                <f:checkbox field="pushImage" checked="true" value="${instance.pushConfig.pushImage}"/>
+            </f:invisibleEntry>
+            <f:entry title="镜像仓库" description="为空时默认获取 pom.xml 配置的仓库地址,如项目未指定,则采用 parent pom 中的默认值(根据 profile 区分)">
+                <f:textbox field="registry" value="${instance.pushConfig.registry}"/>
+            </f:entry>
+        </f:optionalBlock>
     </f:entry>
 
-    <f:entry title="镜像仓库" field="registry" description="为空时默认获取 pom.xml 配置的仓库地址,如项目未指定,则采用 parent pom 中的默认值(根据 profile 区分)">
-        <f:textbox/>
-    </f:entry>
-
-    <f:entry title="构建完成后删除镜像" field="deleteImageAfterBuild">
-        <f:radio name="deleteImageAfterBuild" title="是" value="true" checked="${instance.deleteImageAfterBuild || instance.deleteImageAfterBuild == null}"/>
-        <f:radio name="deleteImageAfterBuild" title="否" value="false" checked="${instance.deleteImageAfterBuild == false}"/>
+    <f:entry>
+        <f:optionalBlock>
+            <f:checkbox title="构建后删除" field="deleteImageAfterBuild" checked="${instance.deleteImageAfterBuild}"/>
+        </f:optionalBlock>
     </f:entry>
 
     <f:entry/>
