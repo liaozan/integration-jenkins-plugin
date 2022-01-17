@@ -9,16 +9,15 @@ import edu.umd.cs.findbugs.annotations.CheckForNull;
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.Launcher;
-import hudson.Launcher.ProcStarter;
 import hudson.model.AbstractBuild;
 import hudson.model.BuildListener;
 import hudson.model.Descriptor;
 import hudson.tasks.Builder;
 import hudson.tasks.Maven;
 import hudson.tasks.Maven.MavenInstallation;
+import hudson.tasks.Shell;
 import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
-import org.apache.commons.io.output.TeeOutputStream;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.velocity.VelocityContext;
@@ -27,7 +26,10 @@ import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.StaplerRequest;
 import org.springframework.lang.Nullable;
 
-import java.io.*;
+import java.io.IOException;
+import java.io.PrintStream;
+import java.io.StringReader;
+import java.io.StringWriter;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.List;
@@ -153,8 +155,7 @@ public class IntegrationBuilder extends Builder {
         if (mavenHome != null) {
             mavenCommand = mavenHome + "/bin/" + mavenCommand;
         }
-        ProcStarter mavenProcess = createProc().cmdAsSingleString(mavenCommand);
-        execute(mavenProcess);
+        execute(mavenCommand);
     }
 
     private void performDockerBuild() throws Exception {
@@ -214,14 +215,6 @@ public class IntegrationBuilder extends Builder {
             return;
         }
         execute("docker image prune -f");
-    }
-
-    private ProcStarter createProc() {
-        ProcStarter launch = launcher.launch();
-        if (launch.pwd() == null) {
-            launch.pwd(workspace);
-        }
-        return launch;
     }
 
     /**
@@ -290,7 +283,6 @@ public class IntegrationBuilder extends Builder {
                 javaOPTS = ((JavaOPTSEntry) entry).getText();
             }
         }
-
 
         //处理镜像替换，Java 启动参数，
         Map<String, Object> param = new HashMap<>();
@@ -368,15 +360,9 @@ public class IntegrationBuilder extends Builder {
         return null;
     }
 
-    private void execute(String command) throws IOException, InterruptedException {
-        ProcStarter process = createProc().cmdAsSingleString(command);
-        execute(process);
-    }
-
-    private void execute(ProcStarter process) throws IOException, InterruptedException {
-        OutputStream stdout = new TeeOutputStream(logger, new ByteArrayOutputStream());
-        OutputStream stderr = new TeeOutputStream(logger, new ByteArrayOutputStream());
-        process.stdout(stdout).stderr(stderr).start().join();
+    private void execute(String command) throws InterruptedException {
+        Shell shell = new Shell(command);
+        shell.perform(build, launcher, listener);
     }
 
     // can not move outside builder class
