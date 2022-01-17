@@ -3,6 +3,8 @@ package com.schbrain.ci.jenkins.plugins.integration.builder;
 import com.schbrain.ci.jenkins.plugins.integration.builder.config.DeployToK8sConfig;
 import com.schbrain.ci.jenkins.plugins.integration.builder.config.DockerConfig;
 import com.schbrain.ci.jenkins.plugins.integration.builder.config.MavenConfig;
+import com.schbrain.ci.jenkins.plugins.integration.builder.config.entry.Entry;
+import com.schbrain.ci.jenkins.plugins.integration.builder.config.entry.JavaOPTSEntry;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import hudson.Extension;
 import hudson.FilePath;
@@ -19,11 +21,17 @@ import net.sf.json.JSONObject;
 import org.apache.commons.io.output.TeeOutputStream;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
+import org.apache.velocity.VelocityContext;
+import org.apache.velocity.app.Velocity;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.StaplerRequest;
 import org.springframework.lang.Nullable;
 
 import java.io.*;
+import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 
 /**
@@ -250,11 +258,18 @@ public class IntegrationBuilder extends Builder {
             logger.println("deploy end, because not specified file name  of k8s deploy .");
             return;
         }
+        String imageName = getFullImageName();
+        if (StringUtils.isEmpty(imageName)) {
+            logger.println("image name is empty ,skip deploy");
+            return;
+        }
 
         String location = k8sConfig.getLocation();
         if (null == location) {
             logger.println("not specified location of k8s config ,will use default config .");
         }
+
+        handleDeployFilePlaceholder(k8sConfig, imageName);
 
         String command = String.format("kubectl apply -f %s", deployFileName);
         if (StringUtils.isNotBlank(location)) {
@@ -264,6 +279,34 @@ public class IntegrationBuilder extends Builder {
         logger.println(command);
 
         execute(command);
+    }
+
+    private void handleDeployFilePlaceholder(DeployToK8sConfig k8sConfig, String imageName) throws Exception {
+        List<Entry> placeHolderEntries = k8sConfig.getEntries();
+        String javaOPTS = null;
+        for (Entry entry : placeHolderEntries) {
+            if (entry instanceof JavaOPTSEntry) {
+                javaOPTS = ((JavaOPTSEntry) entry).getText();
+            }
+        }
+
+
+        //处理镜像替换，Java 启动参数，
+        Map<String, Object> param = new HashMap<>();
+        param.put("JAVA_OPTS", javaOPTS);
+        param.put("IMAGE", imageName);
+
+        FilePath filePath = lookupFile(k8sConfig.getDeployFileName());
+
+        assert filePath != null;
+
+        String data = filePath.readToString();
+        VelocityContext vc = new VelocityContext(param);
+        StringWriter writer = new StringWriter();
+        Velocity.evaluate(vc, writer, "code_gen", data);
+        String resultStr = writer.getBuffer().toString();
+
+        filePath.write(resultStr, StandardCharsets.UTF_8.name());
     }
 
     @CheckForNull

@@ -30,6 +30,12 @@
             <artifactId>localization-zh-cn</artifactId>
             <version>1.0.24</version>
         </dependency>
+
+        <dependency>
+            <groupId>org.apache.velocity</groupId>
+            <artifactId>velocity-engine-core</artifactId>
+            <version>2.2</version>
+        </dependency>
     </dependencies>
 
     <build>

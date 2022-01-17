@@ -9,12 +9,12 @@ import org.kohsuke.stapler.DataBoundConstructor;
  * @since 2022/1/16
  */
 @SuppressWarnings("unused")
-public class JvmEntry extends Entry {
+public class JavaOPTSEntry extends Entry {
 
     private final String text;
 
     @DataBoundConstructor
-    public JvmEntry(String text) {
+    public JavaOPTSEntry(String text) {
         this.text = text;
     }
 
@@ -27,7 +27,7 @@ public class JvmEntry extends Entry {
 
         @Override
         public String getDisplayName() {
-            return "Jvm配置";
+            return "JAVA_OPTS";
         }
 
     }
