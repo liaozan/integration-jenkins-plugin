@@ -5,6 +5,8 @@ import hudson.FilePath;
 
 import java.io.IOException;
 import java.io.PrintStream;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 /**
  * @author liaozan
@@ -30,6 +32,12 @@ public class FileUtils {
             logger.println("expect match one, but found " + fileList.length + " return the first one");
         }
         return fileList[0];
+    }
+
+    public static String toRelativePath(FilePath root, FilePath filePath) {
+        Path rootPath = Paths.get(root.getRemote());
+        Path targetFilePath = Paths.get(filePath.getRemote());
+        return rootPath.relativize(targetFilePath).toString();
     }
 
 }

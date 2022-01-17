@@ -6,6 +6,7 @@ import com.schbrain.ci.jenkins.plugins.integration.builder.config.DockerConfig;
 import com.schbrain.ci.jenkins.plugins.integration.builder.config.MavenConfig;
 import com.schbrain.ci.jenkins.plugins.integration.builder.config.entry.Entry;
 import com.schbrain.ci.jenkins.plugins.integration.builder.env.EnvContributorRunListener.DockerBuildInfoAwareEnvironment;
+import com.schbrain.ci.jenkins.plugins.integration.builder.util.FileUtils;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import hudson.Extension;
 import hudson.FilePath;
@@ -178,7 +179,7 @@ public class IntegrationBuilder extends Builder {
         if (imageName == null) {
             return;
         }
-        String command = String.format("docker build -t %s -f %s .", imageName, dockerfile);
+        String command = String.format("docker build -t %s -f %s .", imageName, FileUtils.toRelativePath(workspace, dockerfile));
         execute(command);
     }
 
