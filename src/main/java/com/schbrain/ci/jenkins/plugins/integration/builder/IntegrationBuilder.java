@@ -277,6 +277,7 @@ public class IntegrationBuilder extends Builder {
 
     private void resolveDeployFilePlaceholder(DeployToK8sConfig k8sConfig, String imageName) throws Exception {
         Map<String, String> param = new HashMap<>();
+        param.put("IMAGE", imageName);
 
         List<Entry> entries = k8sConfig.getEntries();
         if (!CollectionUtils.isEmpty(entries)) {
@@ -285,17 +286,12 @@ public class IntegrationBuilder extends Builder {
             }
         }
 
-        param.put("IMAGE", imageName);
-
         FilePath filePath = lookupFile(workspace, k8sConfig.getDeployFileName(), logger);
-
         if (filePath == null) {
             return;
         }
 
-        String data = filePath.readToString();
-        StrUtil.format(data, param);
-
+        String data = StrUtil.format(filePath.readToString(), param);
         filePath.write(data, StandardCharsets.UTF_8.name());
     }
 

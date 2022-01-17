@@ -29,7 +29,6 @@ public class FileUtils {
         if (fileList.length > 1) {
             logger.println("expect match one, but found " + fileList.length + " return the first one");
         }
-        logger.println(fileList[0].readToString());
         return fileList[0];
     }
 
