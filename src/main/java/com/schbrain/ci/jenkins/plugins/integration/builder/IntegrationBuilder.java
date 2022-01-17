@@ -24,6 +24,7 @@ import org.kohsuke.stapler.StaplerRequest;
 import org.springframework.lang.Nullable;
 
 import java.io.*;
+import java.util.Optional;
 import java.util.Properties;
 
 /**
@@ -210,8 +211,30 @@ public class IntegrationBuilder extends Builder {
     /**
      * 部署镜像到远端
      */
-    private void deployToRemote() {
-        // TODO: 2022/1/16
+    private void deployToRemote() throws Exception {
+        DeployToK8sConfig k8sConfig = getDeployToK8sConfig();
+        if (null == k8sConfig) {
+            logger.println("not selected deploy to k8s .");
+            return;
+        }
+        String deployFileName = k8sConfig.getDeployFileName();
+        if (null == deployFileName) {
+            logger.println("deploy end, because not specified file name  of k8s deploy .");
+            return;
+        }
+
+        String location = k8sConfig.getLocation();
+        if (null == location) {
+            logger.println("not specified location of k8s config ,will use default config .");
+        }
+
+        String command = "kubectl " +
+                (StringUtils.isNotBlank(location) ? " --kubeconfig ".concat(location) : "") +
+                " apply -f ".concat(deployFileName);
+
+        logger.println(command);
+
+        execute(command);
     }
 
     @CheckForNull

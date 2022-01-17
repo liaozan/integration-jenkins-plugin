@@ -20,10 +20,13 @@ public class DeployToK8sConfig extends AbstractDescribableImpl<DeployToK8sConfig
 
     private final String location;
 
+    private final String deployFileName;
+
     @DataBoundConstructor
-    public DeployToK8sConfig(List<Entry> entries, String location) {
+    public DeployToK8sConfig(List<Entry> entries, String location, String deployFileName) {
         this.entries = entries != null ? new ArrayList<>(entries) : Collections.emptyList();
         this.location = location;
+        this.deployFileName = deployFileName;
     }
 
     public List<Entry> getEntries() {
@@ -32,6 +35,10 @@ public class DeployToK8sConfig extends AbstractDescribableImpl<DeployToK8sConfig
 
     public String getLocation() {
         return location;
+    }
+
+    public String getDeployFileName() {
+        return deployFileName;
     }
 
     @Extension

@@ -7,6 +7,10 @@
         <f:textbox field="location"/>
     </f:entry>
 
+    <f:entry title="部署文件名称">
+        <f:textbox field="deployFileName"/>
+    </f:entry>
+
     <f:section title="yaml配置">
         <f:block>
             <f:repeatableHeteroProperty field="entries" hasHeader="true"/>
