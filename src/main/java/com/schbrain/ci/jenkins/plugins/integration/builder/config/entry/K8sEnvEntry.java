@@ -4,6 +4,8 @@ import hudson.Extension;
 import hudson.model.Descriptor;
 import org.kohsuke.stapler.DataBoundConstructor;
 
+import java.util.Map;
+
 /**
  * @author liaozan
  * @since 2022/1/16
@@ -20,6 +22,11 @@ public class K8sEnvEntry extends Entry {
 
     public String getText() {
         return text;
+    }
+
+    @Override
+    public void contribute(Map<String, String> options) {
+
     }
 
     @Extension

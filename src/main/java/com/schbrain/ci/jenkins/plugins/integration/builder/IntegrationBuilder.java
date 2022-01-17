@@ -4,7 +4,6 @@ import com.schbrain.ci.jenkins.plugins.integration.builder.config.DeployToK8sCon
 import com.schbrain.ci.jenkins.plugins.integration.builder.config.DockerConfig;
 import com.schbrain.ci.jenkins.plugins.integration.builder.config.MavenConfig;
 import com.schbrain.ci.jenkins.plugins.integration.builder.config.entry.Entry;
-import com.schbrain.ci.jenkins.plugins.integration.builder.config.entry.JavaOPTSEntry;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import hudson.Extension;
 import hudson.FilePath;
@@ -20,8 +19,6 @@ import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
-import org.apache.velocity.VelocityContext;
-import org.apache.velocity.app.Velocity;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.StaplerRequest;
 import org.springframework.lang.Nullable;
@@ -29,10 +26,8 @@ import org.springframework.lang.Nullable;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.io.StringReader;
-import java.io.StringWriter;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
@@ -103,7 +98,6 @@ public class IntegrationBuilder extends Builder {
 
     protected void doPerformBuild(AbstractBuild<?, ?> build) {
         try {
-            execute("source /etc/profile");
             // fail fast if workspace is invalid
             checkWorkspaceValid(build.getWorkspace());
             // maven build
@@ -276,17 +270,11 @@ public class IntegrationBuilder extends Builder {
     }
 
     private void handleDeployFilePlaceholder(DeployToK8sConfig k8sConfig, String imageName) throws Exception {
-        List<Entry> placeHolderEntries = k8sConfig.getEntries();
-        String javaOPTS = null;
-        for (Entry entry : placeHolderEntries) {
-            if (entry instanceof JavaOPTSEntry) {
-                javaOPTS = ((JavaOPTSEntry) entry).getText();
-            }
+        Map<String, String> param = new HashMap<>();
+        for (Entry entry : k8sConfig.getEntries()) {
+            entry.contribute(param);
         }
 
-        //处理镜像替换，Java 启动参数，
-        Map<String, Object> param = new HashMap<>();
-        param.put("JAVA_OPTS", javaOPTS);
         param.put("IMAGE", imageName);
 
         FilePath filePath = lookupFile(k8sConfig.getDeployFileName());
@@ -294,12 +282,10 @@ public class IntegrationBuilder extends Builder {
         assert filePath != null;
 
         String data = filePath.readToString();
-        VelocityContext vc = new VelocityContext(param);
-        StringWriter writer = new StringWriter();
-        Velocity.evaluate(vc, writer, "code_gen", data);
-        String resultStr = writer.getBuffer().toString();
-
-        filePath.write(resultStr, StandardCharsets.UTF_8.name());
+        for (Map.Entry<String, String> optionEntry : param.entrySet()) {
+            data = data.replaceAll(optionEntry.getKey(), optionEntry.getValue());
+        }
+        filePath.write(data, StandardCharsets.UTF_8.name());
     }
 
     @CheckForNull

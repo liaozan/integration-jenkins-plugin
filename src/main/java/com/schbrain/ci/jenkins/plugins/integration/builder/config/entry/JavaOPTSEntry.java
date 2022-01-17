@@ -4,6 +4,8 @@ import hudson.Extension;
 import hudson.model.Descriptor;
 import org.kohsuke.stapler.DataBoundConstructor;
 
+import java.util.Map;
+
 /**
  * @author liaozan
  * @since 2022/1/16
@@ -22,12 +24,17 @@ public class JavaOPTSEntry extends Entry {
         return text;
     }
 
+    @Override
+    public void contribute(Map<String, String> options) {
+        options.put("JAVA_OPTS", text);
+    }
+
     @Extension
     public static class DescriptorImpl extends Descriptor<Entry> {
 
         @Override
         public String getDisplayName() {
-            return "JAVA_OPTS";
+            return "Java参数配置";
         }
 
     }
