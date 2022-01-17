@@ -98,6 +98,7 @@ public class IntegrationBuilder extends Builder {
 
     protected void doPerformBuild(AbstractBuild<?, ?> build) {
         try {
+            refreshEnv();
             // fail fast if workspace is invalid
             checkWorkspaceValid(build.getWorkspace());
             // maven build
@@ -117,6 +118,10 @@ public class IntegrationBuilder extends Builder {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+    }
+
+    private void refreshEnv() throws InterruptedException {
+        execute("source /etc/profile");
     }
 
     /**

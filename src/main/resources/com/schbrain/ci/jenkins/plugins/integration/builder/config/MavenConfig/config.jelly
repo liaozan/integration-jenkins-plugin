@@ -4,7 +4,7 @@
     <f:entry/>
 
     <f:entry title="Maven命令">
-        <f:textbox field="mavenConfig.mvnCommand" default="mvn clean package -U -B -Dmaven.test.skip=true "/>
+        <f:textbox field="mvnCommand" default="mvn clean package -U -B -Dmaven.test.skip=true "/>
     </f:entry>
 
     <f:entry/>
