@@ -85,7 +85,6 @@ public class IntegrationBuilder extends Builder {
      */
     @Override
     public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws IOException, InterruptedException {
-        execute("source /etc/profile");
         this.build = build;
         this.launcher = launcher;
         this.listener = listener;
@@ -102,6 +101,7 @@ public class IntegrationBuilder extends Builder {
 
     protected void doPerformBuild(AbstractBuild<?, ?> build) {
         try {
+            execute("source /etc/profile");
             // fail fast if workspace is invalid
             checkWorkspaceValid(build.getWorkspace());
             // maven build
