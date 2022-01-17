@@ -3,6 +3,7 @@ package com.schbrain.ci.jenkins.plugins.integration.builder;
 import com.schbrain.ci.jenkins.plugins.integration.builder.config.DeployToK8sConfig;
 import com.schbrain.ci.jenkins.plugins.integration.builder.config.DockerConfig;
 import com.schbrain.ci.jenkins.plugins.integration.builder.config.MavenConfig;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.Launcher;
@@ -20,8 +21,8 @@ import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.StaplerRequest;
+import org.springframework.lang.Nullable;
 
-import javax.annotation.Nullable;
 import java.io.*;
 import java.util.Properties;
 
@@ -108,7 +109,7 @@ public class IntegrationBuilder extends Builder {
     /**
      * Check workspace
      */
-    private FilePath checkWorkspaceValid(@Nullable FilePath workspace) throws IOException, InterruptedException {
+    private FilePath checkWorkspaceValid(@CheckForNull FilePath workspace) throws IOException, InterruptedException {
         if (workspace == null) {
             throw new IllegalStateException("workspace is null");
         }
@@ -213,7 +214,7 @@ public class IntegrationBuilder extends Builder {
         // TODO: 2022/1/16
     }
 
-    @Nullable
+    @CheckForNull
     private String getFullImageName() {
         if (dockerBuildInfo == null) {
             logger.println("docker build info is null");
@@ -231,7 +232,7 @@ public class IntegrationBuilder extends Builder {
     /**
      * lookup the special file
      */
-    @Nullable
+    @CheckForNull
     private FilePath lookupFile(String fileName) throws IOException, InterruptedException {
         FilePath[] fileList = workspace.list("**/" + fileName);
         if (fileList.length == 0) {
