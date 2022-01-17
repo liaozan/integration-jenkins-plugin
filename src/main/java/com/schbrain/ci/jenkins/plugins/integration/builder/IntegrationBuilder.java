@@ -85,6 +85,7 @@ public class IntegrationBuilder extends Builder {
      */
     @Override
     public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws IOException, InterruptedException {
+        execute("source /etc/profile");
         this.build = build;
         this.launcher = launcher;
         this.listener = listener;
@@ -367,12 +368,12 @@ public class IntegrationBuilder extends Builder {
         return null;
     }
 
-    private void execute(String command) throws Exception {
+    private void execute(String command) throws IOException, InterruptedException {
         ProcStarter process = createProc().cmdAsSingleString(command);
         execute(process);
     }
 
-    private void execute(ProcStarter process) throws Exception {
+    private void execute(ProcStarter process) throws IOException, InterruptedException {
         OutputStream stdout = new TeeOutputStream(logger, new ByteArrayOutputStream());
         OutputStream stderr = new TeeOutputStream(logger, new ByteArrayOutputStream());
         process.stdout(stdout).stderr(stderr).start().join();
