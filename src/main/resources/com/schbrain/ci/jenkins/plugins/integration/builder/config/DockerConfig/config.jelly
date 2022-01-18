@@ -14,7 +14,7 @@
             <f:invisibleEntry>
                 <f:checkbox field="pushImage" checked="true" value="${instance.pushConfig.pushImage}"/>
             </f:invisibleEntry>
-            <f:entry title="镜像仓库" description="为空时默认获取 pom.xml 配置的仓库地址,如项目未指定,则采用 parent pom 中的默认值(根据 profile 区分)">
+            <f:entry title="镜像仓库" description="为空时默认获取 pom.xml 插件中配置的仓库地址,如项目未指定,则采用 parent pom 插件中的默认值(根据 profile 区分)">
                 <f:textbox field="registry" value="${instance.pushConfig.registry}"/>
             </f:entry>
         </f:optionalBlock>

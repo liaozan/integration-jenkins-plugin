@@ -3,11 +3,11 @@
 
     <f:entry/>
 
-    <f:entry title="Maven命令">
-        <f:textbox field="mvnCommand" default="mvn clean package -U -B -Dmaven.test.skip=true "/>
+    <f:entry title="Maven命令" description="如未配置 M2_HOME 环境,请在命令前加入指向 mvn 命令的全路径">
+        <f:textbox field="mvnCommand" default="mvn clean package -U -B -Dmaven.test.skip=true"/>
     </f:entry>
 
-    <f:entry title="JAVA_HOME" description="/usr/local/jdk1.8.0_172 或 /usr/local/jdk-11.0.12">
+    <f:entry title="JAVA_HOME" description="如未配置 JAVA_HOME 环境,则会使用本地默认 JAVA_HOME">
         <f:textbox field="javaHome"/>
     </f:entry>
 

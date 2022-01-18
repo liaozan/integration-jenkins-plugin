@@ -6,11 +6,13 @@ import com.schbrain.ci.jenkins.plugins.integration.builder.config.DeployToK8sCon
 import com.schbrain.ci.jenkins.plugins.integration.builder.config.DockerConfig;
 import com.schbrain.ci.jenkins.plugins.integration.builder.config.MavenConfig;
 import com.schbrain.ci.jenkins.plugins.integration.builder.config.entry.Entry;
-import com.schbrain.ci.jenkins.plugins.integration.builder.env.EnvContributorRunListener.CustomEnvironment;
+import com.schbrain.ci.jenkins.plugins.integration.builder.env.BuildEnvContributor;
 import com.schbrain.ci.jenkins.plugins.integration.builder.util.FileUtils;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import hudson.*;
-import hudson.model.*;
+import hudson.model.AbstractBuild;
+import hudson.model.BuildListener;
+import hudson.model.Descriptor;
 import hudson.tasks.Builder;
 import hudson.tasks.Shell;
 import net.sf.json.JSONObject;
@@ -211,7 +213,7 @@ public class IntegrationBuilder extends Builder {
     /**
      * Delete the image produced in the build
      */
-    private void deleteImageAfterBuild(EnvVars envVars) throws Exception {
+    private void deleteImageAfterBuild(EnvVars envVars) throws InterruptedException {
         if (getDockerConfig().isDisabled()) {
             logger.println("docker build is not checked");
             return;
@@ -305,13 +307,9 @@ public class IntegrationBuilder extends Builder {
     }
 
     private void execute(String command, EnvVars envVars) throws InterruptedException {
+        BuildEnvContributor.clearEnvVarsFromDisk(workspace.getBaseName());
+        BuildEnvContributor.saveEnvVarsToDisk(envVars, workspace.getBaseName());
         Shell shell = new Shell(command);
-        EnvironmentList environments = build.getEnvironments();
-        for (Environment environment : environments) {
-            if (environment instanceof CustomEnvironment) {
-                ((CustomEnvironment) environment).addEnvVars(envVars);
-            }
-        }
         shell.perform(build, launcher, listener);
     }
 
