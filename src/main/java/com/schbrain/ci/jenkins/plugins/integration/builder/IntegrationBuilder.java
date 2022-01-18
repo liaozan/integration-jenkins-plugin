@@ -175,12 +175,12 @@ public class IntegrationBuilder extends Builder {
 
     private void readDockerBuildInfo() throws IOException, InterruptedException {
         if (dockerBuildInfo == null) {
-            FilePath lookupFile = lookupFile(workspace, "dockerBuildInfo", logger);
-            if (lookupFile == null) {
+            FilePath dockerBuildInfo = lookupFile(workspace, "dockerBuildInfo", logger);
+            if (dockerBuildInfo == null) {
                 logger.println("dockerBuildInfo file not exist, skip docker build");
                 return;
             }
-            this.dockerBuildInfo = filePathToMap(lookupFile);
+            this.dockerBuildInfo = filePathToMap(dockerBuildInfo);
         }
     }
 
@@ -295,6 +295,7 @@ public class IntegrationBuilder extends Builder {
         }
 
         String data = StrUtil.format(filePath.readToString(), param);
+        logger.printf("resolved k8sDeployFile :\n%s", data);
         filePath.write(data, StandardCharsets.UTF_8.name());
     }
 
