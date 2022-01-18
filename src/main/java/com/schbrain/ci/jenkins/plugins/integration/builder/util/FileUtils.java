@@ -29,7 +29,7 @@ public class FileUtils {
             return null;
         }
         FilePath matchedFile = getTheClosestFile(fileList);
-        logger.printf("lookup for %s content: \n%s", fileName, matchedFile.readToString());
+        logger.printf("lookup for %s found at %s,  content: \n%s", fileName, matchedFile.getRemote(), matchedFile.readToString());
         return matchedFile;
     }
 
