@@ -315,15 +315,16 @@ public class IntegrationBuilder extends Builder {
             logger.println("getFullImageName docker build step is not checked");
             return null;
         }
+
+        String registry = null;
         PushConfig pushConfig = dockerConfig.getPushConfig();
-        if (pushConfig == null) {
-            logger.println("getFullImageName docker push is not checked");
-            return null;
+        if (pushConfig != null) {
+            registry = pushConfig.getRegistry();
         }
-        String registry = pushConfig.getRegistry();
         if (StringUtils.isBlank(registry)) {
             registry = envVars.get("REGISTRY");
         }
+
         String appName = envVars.get("APP_NAME");
         int buildNumber = build.getNumber();
         Date buildStartTime = build.getTime();
