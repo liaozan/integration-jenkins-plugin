@@ -55,7 +55,12 @@ public class BuildEnvContributor extends BuildVariableContributor {
         File envFilePath = getEnvFilePath(build.getWorkspace().getBaseName());
         for (String line : FileUtil.readUtf8Lines(envFilePath)) {
             String[] variablePair = line.split(DELIMITER);
-            variables.put(variablePair[0], variablePair[1]);
+            // variables may not be split by =
+            if (variablePair.length == 1) {
+                variables.put(variablePair[0], null);
+            } else {
+                variables.put(variablePair[0], variablePair[1]);
+            }
         }
     }
 
