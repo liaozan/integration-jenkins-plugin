@@ -77,8 +77,7 @@ public class IntegrationBuilder extends Builder {
         this.listener = listener;
         this.logger = listener.getLogger();
         this.workspace = checkWorkspaceValid(build.getWorkspace());
-        EnvVars envVars = new EnvVars();
-        this.doPerformBuild(build, envVars);
+        this.doPerformBuild(build);
         return true;
     }
 
@@ -87,8 +86,10 @@ public class IntegrationBuilder extends Builder {
         return (IntegrationDescriptor) super.getDescriptor();
     }
 
-    protected void doPerformBuild(AbstractBuild<?, ?> build, EnvVars envVars) {
+    protected void doPerformBuild(AbstractBuild<?, ?> build) {
         try {
+            // create context envVars
+            EnvVars envVars = new EnvVars();
             // fail fast if workspace is invalid
             checkWorkspaceValid(build.getWorkspace());
             // maven build
