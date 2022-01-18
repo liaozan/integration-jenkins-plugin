@@ -46,7 +46,7 @@ public class BuildEnvContributor extends BuildVariableContributor {
                 e.printStackTrace();
             }
         }
-        return directory;
+        return envVarsFile;
     }
 
     @Override
