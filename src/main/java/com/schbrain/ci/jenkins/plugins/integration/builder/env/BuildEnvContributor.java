@@ -53,15 +53,15 @@ public class BuildEnvContributor extends BuildVariableContributor {
     public void buildVariablesFor(AbstractBuild build, Map<String, String> variables) {
         // noinspection ConstantConditions
         File envFilePath = getEnvFilePath(build.getWorkspace().getBaseName());
+        EnvVars envVars = new EnvVars();
         for (String line : FileUtil.readUtf8Lines(envFilePath)) {
             String[] variablePair = line.split(DELIMITER);
             // variables may not be split by =
-            if (variablePair.length == 1) {
-                variables.put(variablePair[0], null);
-            } else {
-                variables.put(variablePair[0], variablePair[1]);
+            if (variablePair.length != 1) {
+                envVars.putIfNotNull(variablePair[0], variablePair[1]);
             }
         }
+        variables.putAll(envVars);
     }
 
     public static class CustomEnvironment extends Environment {

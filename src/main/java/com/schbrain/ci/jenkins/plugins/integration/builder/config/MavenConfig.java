@@ -12,13 +12,9 @@ import org.kohsuke.stapler.DataBoundConstructor;
 @SuppressWarnings("unused")
 public class MavenConfig extends BuildConfig<MavenConfig> {
 
-    private String mvnCommand;
+    private final String mvnCommand;
 
-    private String javaHome;
-
-    public MavenConfig() {
-        setDisabled(true);
-    }
+    private final String javaHome;
 
     @DataBoundConstructor
     public MavenConfig(String mvnCommand, String javaHome) {

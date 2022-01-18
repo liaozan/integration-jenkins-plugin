@@ -4,12 +4,16 @@ import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.StrUtil;
 import com.schbrain.ci.jenkins.plugins.integration.builder.config.DeployToK8sConfig;
 import com.schbrain.ci.jenkins.plugins.integration.builder.config.DockerConfig;
+import com.schbrain.ci.jenkins.plugins.integration.builder.config.DockerConfig.PushConfig;
 import com.schbrain.ci.jenkins.plugins.integration.builder.config.MavenConfig;
 import com.schbrain.ci.jenkins.plugins.integration.builder.config.entry.Entry;
 import com.schbrain.ci.jenkins.plugins.integration.builder.env.BuildEnvContributor;
 import com.schbrain.ci.jenkins.plugins.integration.builder.util.FileUtils;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
-import hudson.*;
+import hudson.EnvVars;
+import hudson.Extension;
+import hudson.FilePath;
+import hudson.Launcher;
 import hudson.model.AbstractBuild;
 import hudson.model.BuildListener;
 import hudson.model.Descriptor;
@@ -50,19 +54,22 @@ public class IntegrationBuilder extends Builder {
     public IntegrationBuilder(@Nullable MavenConfig mavenConfig,
                               @Nullable DockerConfig dockerConfig,
                               @Nullable DeployToK8sConfig deployToK8sConfig) {
-        this.mavenConfig = Util.fixNull(mavenConfig, new MavenConfig());
-        this.dockerConfig = Util.fixNull(dockerConfig, new DockerConfig());
-        this.deployToK8sConfig = Util.fixNull(deployToK8sConfig, new DeployToK8sConfig());
+        this.mavenConfig = mavenConfig;
+        this.dockerConfig = dockerConfig;
+        this.deployToK8sConfig = deployToK8sConfig;
     }
 
+    @Nullable
     public MavenConfig getMavenConfig() {
         return mavenConfig;
     }
 
+    @Nullable
     public DockerConfig getDockerConfig() {
         return dockerConfig;
     }
 
+    @Nullable
     public DeployToK8sConfig getDeployToK8sConfig() {
         return deployToK8sConfig;
     }
@@ -128,16 +135,17 @@ public class IntegrationBuilder extends Builder {
      * Build project through maven
      */
     private void performMavenBuild(EnvVars envVars) throws Exception {
-        if (getMavenConfig() == null) {
+        MavenConfig mavenConfig = getMavenConfig();
+        if (mavenConfig == null) {
             logger.println("maven build is not checked");
             return;
         }
-        String mavenCommand = getMavenConfig().getMvnCommand();
+        String mavenCommand = mavenConfig.getMvnCommand();
         if (StringUtils.isBlank(mavenCommand)) {
             logger.println("maven command is empty, skip maven build");
             return;
         }
-        String javaHome = getMavenConfig().getJavaHome();
+        String javaHome = mavenConfig.getJavaHome();
         if (StringUtils.isNotBlank(javaHome)) {
             envVars.put("JAVA_HOME", javaHome);
         }
@@ -146,11 +154,12 @@ public class IntegrationBuilder extends Builder {
     }
 
     private void performDockerBuild(EnvVars envVars) throws Exception {
-        if (getDockerConfig().isDisabled()) {
+        DockerConfig dockerConfig = getDockerConfig();
+        if (dockerConfig == null) {
             logger.println("docker build is not checked");
             return;
         }
-        if (!getDockerConfig().getBuildImage()) {
+        if (!dockerConfig.getBuildImage()) {
             logger.println("docker build image is skipped");
             return;
         }
@@ -173,7 +182,8 @@ public class IntegrationBuilder extends Builder {
             logger.println("dockerBuildInfo file not exist, skip docker build");
             return;
         }
-        envVars.putAll(filePathToMap(dockerBuildInfo));
+        // overwriting existing environment variables is not allowed
+        filePathToMap(dockerBuildInfo).forEach(envVars::putIfAbsent);
     }
 
     private Map<String, String> filePathToMap(FilePath lookupFile) throws IOException, InterruptedException {
@@ -187,11 +197,16 @@ public class IntegrationBuilder extends Builder {
     }
 
     private void performDockerPush(EnvVars envVars) throws Exception {
-        if (getDockerConfig().isDisabled()) {
+        DockerConfig dockerConfig = getDockerConfig();
+        if (dockerConfig == null) {
             logger.println("docker build is not checked");
             return;
         }
-        if (!getDockerConfig().getPushConfig().getPushImage()) {
+        if (dockerConfig.getPushConfig() == null) {
+            logger.println("docker push is not checked");
+            return;
+        }
+        if (!dockerConfig.getPushConfig().getPushImage()) {
             logger.println("docker push image is skipped");
             return;
         }
@@ -204,7 +219,8 @@ public class IntegrationBuilder extends Builder {
     }
 
     private void pruneImages(EnvVars envVars) throws Exception {
-        if (getDockerConfig().isDisabled()) {
+        DockerConfig dockerConfig = getDockerConfig();
+        if (dockerConfig == null) {
             logger.println("docker build is not checked");
             return;
         }
@@ -215,11 +231,12 @@ public class IntegrationBuilder extends Builder {
      * Delete the image produced in the build
      */
     private void deleteImageAfterBuild(EnvVars envVars) throws InterruptedException {
-        if (getDockerConfig().isDisabled()) {
+        DockerConfig dockerConfig = getDockerConfig();
+        if (dockerConfig == null) {
             logger.println("docker build is not checked");
             return;
         }
-        if (!getDockerConfig().getDeleteImageAfterBuild()) {
+        if (!dockerConfig.getDeleteImageAfterBuild()) {
             logger.println("delete built image is skip");
             return;
         }
@@ -237,7 +254,7 @@ public class IntegrationBuilder extends Builder {
      */
     private void deployToRemote(EnvVars envVars) throws Exception {
         DeployToK8sConfig k8sConfig = getDeployToK8sConfig();
-        if (k8sConfig.isDisabled()) {
+        if (k8sConfig == null) {
             logger.println("k8s deploy is not checked");
             return;
         }
@@ -293,11 +310,17 @@ public class IntegrationBuilder extends Builder {
 
     @Nullable
     private String getFullImageName(EnvVars envVars) {
-        if (getDockerConfig().isDisabled()) {
-            logger.println("docker build step is not checked");
+        DockerConfig dockerConfig = getDockerConfig();
+        if (dockerConfig == null) {
+            logger.println("getFullImageName docker build step is not checked");
             return null;
         }
-        String registry = getDockerConfig().getPushConfig().getRegistry();
+        PushConfig pushConfig = dockerConfig.getPushConfig();
+        if (pushConfig == null) {
+            logger.println("getFullImageName docker push is not checked");
+            return null;
+        }
+        String registry = pushConfig.getRegistry();
         if (StringUtils.isBlank(registry)) {
             registry = envVars.get("REGISTRY");
         }

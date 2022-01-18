@@ -15,15 +15,11 @@ import java.util.List;
 @SuppressWarnings("unused")
 public class DeployToK8sConfig extends BuildConfig<DeployToK8sConfig> {
 
-    private List<Entry> entries;
+    private final List<Entry> entries;
 
-    private String configLocation;
+    private final String configLocation;
 
-    private String deployFileName;
-
-    public DeployToK8sConfig() {
-        setDisabled(true);
-    }
+    private final String deployFileName;
 
     @DataBoundConstructor
     public DeployToK8sConfig(List<Entry> entries, String configLocation, String deployFileName) {

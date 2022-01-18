@@ -8,14 +8,4 @@ import hudson.model.AbstractDescribableImpl;
  */
 public abstract class BuildConfig<T extends AbstractDescribableImpl<T>> extends AbstractDescribableImpl<T> {
 
-    protected boolean disabled = false;
-
-    public boolean isDisabled() {
-        return disabled;
-    }
-
-    public void setDisabled(boolean disabled) {
-        this.disabled = disabled;
-    }
-
 }

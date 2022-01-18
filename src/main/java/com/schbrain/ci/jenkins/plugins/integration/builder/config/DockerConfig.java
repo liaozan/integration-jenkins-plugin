@@ -4,6 +4,7 @@ import hudson.Extension;
 import hudson.Util;
 import hudson.model.Descriptor;
 import org.kohsuke.stapler.DataBoundConstructor;
+import org.springframework.lang.Nullable;
 
 /**
  * @author liaozan
@@ -12,21 +13,18 @@ import org.kohsuke.stapler.DataBoundConstructor;
 @SuppressWarnings("unused")
 public class DockerConfig extends BuildConfig<DockerConfig> {
 
-    private Boolean buildImage;
-    private PushConfig pushConfig;
-    private Boolean deleteImageAfterBuild;
-
-    public DockerConfig() {
-        setDisabled(true);
-    }
+    private final Boolean buildImage;
+    private final PushConfig pushConfig;
+    private final Boolean deleteImageAfterBuild;
 
     @DataBoundConstructor
     public DockerConfig(Boolean buildImage, PushConfig pushConfig, Boolean deleteImageAfterBuild) {
         this.buildImage = Util.fixNull(buildImage, false);
-        this.pushConfig = Util.fixNull(pushConfig, new PushConfig());
+        this.pushConfig = pushConfig;
         this.deleteImageAfterBuild = Util.fixNull(deleteImageAfterBuild, false);
     }
 
+    @Nullable
     public PushConfig getPushConfig() {
         return pushConfig;
     }
@@ -46,12 +44,8 @@ public class DockerConfig extends BuildConfig<DockerConfig> {
 
     public static class PushConfig extends BuildConfig<PushConfig> {
 
-        private Boolean pushImage;
-        private String registry;
-
-        public PushConfig() {
-            setDisabled(true);
-        }
+        private final Boolean pushImage;
+        private final String registry;
 
         @DataBoundConstructor
         public PushConfig(Boolean pushImage, String registry) {

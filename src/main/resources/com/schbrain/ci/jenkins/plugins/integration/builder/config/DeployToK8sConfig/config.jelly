@@ -3,15 +3,15 @@
 
     <f:entry/>
 
-    <f:entry title="kubectl --config">
+    <f:entry title="kubectl --config" description="为空时使用默认配置文件">
         <f:textbox field="configLocation" value="${instance.configLocation}"/>
     </f:entry>
 
-    <f:entry title="部署文件名称">
-        <f:textbox field="deployFileName" value="${instance.deployFileName}" default="k8s-deploy.yaml"/>
+    <f:entry title="部署文件名称" description="为空时默认使用部署模板文件进行变量替换后的部署文件">
+        <f:textbox field="deployFileName" value="${instance.deployFileName}"/>
     </f:entry>
 
-    <f:entry title="yaml配置">
+    <f:entry title="yaml配置" description="额外的配置">
         <f:repeatableHeteroProperty field="entries" oneEach="true" hasHeader="true"/>
     </f:entry>
 
