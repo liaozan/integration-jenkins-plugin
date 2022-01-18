@@ -14,12 +14,8 @@ import hudson.Launcher;
 import hudson.Util;
 import hudson.model.*;
 import hudson.tasks.Builder;
-import hudson.tasks.Maven;
-import hudson.tasks.Maven.MavenInstallation;
 import hudson.tasks.Shell;
-import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
-import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.StaplerRequest;
@@ -153,10 +149,6 @@ public class IntegrationBuilder extends Builder {
         if (StringUtils.isBlank(mavenCommand)) {
             logger.println("maven command is empty, skip maven build");
             return;
-        }
-        String mavenHome = getMavenHome();
-        if (mavenHome != null) {
-            mavenCommand = mavenHome + "/bin/" + mavenCommand;
         }
         execute(mavenCommand);
     }
@@ -313,25 +305,6 @@ public class IntegrationBuilder extends Builder {
         String appName = getDockerBuildInfo().getProperty("APP_NAME");
         String version = getDockerBuildInfo().getProperty("VERSION");
         return String.format("%s/%s:%s", registry, appName, version);
-    }
-
-    /**
-     * getMavenHome
-     */
-    private String getMavenHome() throws IOException, InterruptedException {
-        MavenInstallation[] installations = Jenkins.get().getDescriptorByType(Maven.DescriptorImpl.class).getInstallations();
-        if (ArrayUtils.isEmpty(installations)) {
-            logger.println("maven installations is empty, will execute in workspace directly");
-            // maven installations is not set up, return directly with empty
-        } else {
-            for (MavenInstallation installation : installations) {
-                installation = installation.forNode(build.getBuiltOn(), listener);
-                if (installation.getExists()) {
-                    return installation.getHome();
-                }
-            }
-        }
-        return null;
     }
 
     private void execute(String command) throws InterruptedException {
