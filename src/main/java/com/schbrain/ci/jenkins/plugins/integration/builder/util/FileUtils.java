@@ -28,17 +28,30 @@ public class FileUtils {
             logger.println("could not found matched file: " + fileName);
             return null;
         }
-        if (fileList.length > 1) {
-            logger.println("expect match one, but found " + fileList.length + " return the first one");
-        }
-        logger.printf("lookup for %s content: \n%s", fileName, fileList[0].readToString());
-        return fileList[0];
+        FilePath matchedFile = getTheClosestFile(fileList);
+        logger.printf("lookup for %s content: \n%s", fileName, matchedFile.readToString());
+        return matchedFile;
     }
 
     public static String toRelativePath(FilePath root, FilePath filePath) {
         Path rootPath = Paths.get(root.getRemote());
         Path targetFilePath = Paths.get(filePath.getRemote());
         return rootPath.relativize(targetFilePath).toString();
+    }
+
+    public static FilePath getTheClosestFile(FilePath[] fileList) {
+        FilePath matched = fileList[0];
+        if (fileList.length == 1) {
+            return matched;
+        }
+
+        for (FilePath filePath : fileList) {
+            String filePathName = filePath.getRemote();
+            if (filePathName.length() < matched.getRemote().length()) {
+                matched = filePath;
+            }
+        }
+        return matched;
     }
 
 }
