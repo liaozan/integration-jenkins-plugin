@@ -50,7 +50,7 @@ public class IntegrationBuilder extends Builder {
     private PrintStream logger;
 
     @Nullable
-    private Properties dockerBuildInfo;
+    private Map<String, String> dockerBuildInfo;
 
     @DataBoundConstructor
     public IntegrationBuilder(@Nullable MavenConfig mavenConfig,
@@ -74,7 +74,7 @@ public class IntegrationBuilder extends Builder {
     }
 
     @CheckForNull
-    public Properties getDockerBuildInfo() {
+    public Map<String, String> getDockerBuildInfo() {
         return dockerBuildInfo;
     }
 
@@ -182,9 +182,18 @@ public class IntegrationBuilder extends Builder {
                 logger.println("dockerBuildInfo file not exist, skip docker build");
                 return;
             }
-            this.dockerBuildInfo = new Properties();
-            this.dockerBuildInfo.load(new StringReader(lookupFile.readToString()));
+            this.dockerBuildInfo = filePathToMap(lookupFile);
         }
+    }
+
+    private Map<String, String> filePathToMap(FilePath lookupFile) throws IOException, InterruptedException {
+        Map<String, String> result = new HashMap<>();
+        Properties properties = new Properties();
+        properties.load(new StringReader(lookupFile.readToString()));
+        for (String propertyName : properties.stringPropertyNames()) {
+            result.put(propertyName, properties.getProperty(propertyName));
+        }
+        return result;
     }
 
     private void performDockerPush() throws Exception {
@@ -300,10 +309,10 @@ public class IntegrationBuilder extends Builder {
         }
         String registry = getDockerConfig().getPushConfig().getRegistry();
         if (StringUtils.isBlank(registry)) {
-            registry = getDockerBuildInfo().getProperty("REGISTRY");
+            registry = getDockerBuildInfo().get("REGISTRY");
         }
-        String appName = getDockerBuildInfo().getProperty("APP_NAME");
-        String version = getDockerBuildInfo().getProperty("VERSION");
+        String appName = getDockerBuildInfo().get("APP_NAME");
+        String version = getDockerBuildInfo().get("VERSION");
         return String.format("%s/%s:%s", registry, appName, version);
     }
 

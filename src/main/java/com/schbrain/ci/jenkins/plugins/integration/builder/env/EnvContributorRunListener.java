@@ -12,7 +12,6 @@ import hudson.model.listeners.RunListener;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Map;
-import java.util.Properties;
 
 /**
  * @author liaozan
@@ -31,19 +30,17 @@ public class EnvContributorRunListener extends RunListener<Build<?, ?>> {
 
         private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
 
-        private Properties dockerBuildInfo;
+        private Map<String, String> dockerBuildInfo;
 
         @Override
         public void buildEnvVars(Map<String, String> env) {
             env.put("DATE", DATE_TIME_FORMATTER.format(LocalDateTime.now()));
             if (dockerBuildInfo != null) {
-                for (String propertyName : dockerBuildInfo.stringPropertyNames()) {
-                    env.put(propertyName, dockerBuildInfo.getProperty(propertyName));
-                }
+                env.putAll(dockerBuildInfo);
             }
         }
 
-        public void setDockerInfo(Properties dockerBuildInfo) {
+        public void setDockerInfo(Map<String, String> dockerBuildInfo) {
             this.dockerBuildInfo = dockerBuildInfo;
         }
 
