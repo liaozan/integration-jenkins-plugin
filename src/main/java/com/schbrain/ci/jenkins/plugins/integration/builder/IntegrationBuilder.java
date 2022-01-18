@@ -1,5 +1,6 @@
 package com.schbrain.ci.jenkins.plugins.integration.builder;
 
+import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.StrUtil;
 import com.schbrain.ci.jenkins.plugins.integration.builder.config.DeployToK8sConfig;
 import com.schbrain.ci.jenkins.plugins.integration.builder.config.DockerConfig;
@@ -26,13 +27,8 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.io.StringReader;
 import java.nio.charset.StandardCharsets;
-import java.time.LocalDateTime;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
+import java.util.*;
 
-import static com.schbrain.ci.jenkins.plugins.integration.builder.env.EnvContributorRunListener.DockerBuildInfoAwareEnvironment.DATE_TIME_FORMATTER;
 import static com.schbrain.ci.jenkins.plugins.integration.builder.util.FileUtils.lookupFile;
 
 /**
@@ -44,7 +40,6 @@ public class IntegrationBuilder extends Builder {
     private final MavenConfig mavenConfig;
     private final DockerConfig dockerConfig;
     private final DeployToK8sConfig deployToK8sConfig;
-    private final LocalDateTime startTime = LocalDateTime.now();
 
     private AbstractBuild<?, ?> build;
     private Launcher launcher;
@@ -318,7 +313,8 @@ public class IntegrationBuilder extends Builder {
         }
         String appName = getDockerBuildInfo().get("APP_NAME");
         int buildNumber = build.getNumber();
-        return String.format("%s/%s:%d-%s", registry, appName, buildNumber, DATE_TIME_FORMATTER.format(startTime));
+        Date buildStartTime = build.getTime();
+        return String.format("%s/%s:%d-%s", registry, appName, buildNumber, DateUtil.format(buildStartTime, "yyyyMMddHHmmss"));
     }
 
     private void execute(String command) throws InterruptedException {
