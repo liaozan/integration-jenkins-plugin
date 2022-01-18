@@ -26,11 +26,13 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.io.StringReader;
 import java.nio.charset.StandardCharsets;
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
+import static com.schbrain.ci.jenkins.plugins.integration.builder.env.EnvContributorRunListener.DockerBuildInfoAwareEnvironment.DATE_TIME_FORMATTER;
 import static com.schbrain.ci.jenkins.plugins.integration.builder.util.FileUtils.lookupFile;
 
 /**
@@ -42,6 +44,7 @@ public class IntegrationBuilder extends Builder {
     private final MavenConfig mavenConfig;
     private final DockerConfig dockerConfig;
     private final DeployToK8sConfig deployToK8sConfig;
+    private final LocalDateTime startTime = LocalDateTime.now();
 
     private AbstractBuild<?, ?> build;
     private Launcher launcher;
@@ -314,8 +317,8 @@ public class IntegrationBuilder extends Builder {
             registry = getDockerBuildInfo().get("REGISTRY");
         }
         String appName = getDockerBuildInfo().get("APP_NAME");
-        String version = getDockerBuildInfo().get("VERSION");
-        return String.format("%s/%s:%s", registry, appName, version);
+        int buildNumber = build.getNumber();
+        return String.format("%s/%s:%d-%s", registry, appName, buildNumber, DATE_TIME_FORMATTER.format(startTime));
     }
 
     private void execute(String command) throws InterruptedException {

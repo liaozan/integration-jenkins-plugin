@@ -28,7 +28,7 @@ public class EnvContributorRunListener extends RunListener<Build<?, ?>> {
 
     public static class DockerBuildInfoAwareEnvironment extends Environment {
 
-        private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
+        public static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
 
         private Map<String, String> dockerBuildInfo;
 
