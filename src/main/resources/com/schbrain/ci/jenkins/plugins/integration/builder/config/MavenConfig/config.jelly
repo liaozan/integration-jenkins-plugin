@@ -7,6 +7,10 @@
         <f:textbox field="mvnCommand" default="mvn clean package -U -B -Dmaven.test.skip=true "/>
     </f:entry>
 
+    <f:entry title="JAVA_HOME" description="/usr/local/jdk1.8.0_172 或 /usr/local/jdk-11.0.12">
+        <f:textbox field="javaHome"/>
+    </f:entry>
+
     <f:entry/>
 
 </j:jelly>

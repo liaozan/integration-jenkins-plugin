@@ -6,13 +6,10 @@ import com.schbrain.ci.jenkins.plugins.integration.builder.config.DeployToK8sCon
 import com.schbrain.ci.jenkins.plugins.integration.builder.config.DockerConfig;
 import com.schbrain.ci.jenkins.plugins.integration.builder.config.MavenConfig;
 import com.schbrain.ci.jenkins.plugins.integration.builder.config.entry.Entry;
-import com.schbrain.ci.jenkins.plugins.integration.builder.env.EnvContributorRunListener.DockerBuildInfoAwareEnvironment;
+import com.schbrain.ci.jenkins.plugins.integration.builder.env.EnvContributorRunListener.CustomEnvironment;
 import com.schbrain.ci.jenkins.plugins.integration.builder.util.FileUtils;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
-import hudson.Extension;
-import hudson.FilePath;
-import hudson.Launcher;
-import hudson.Util;
+import hudson.*;
 import hudson.model.*;
 import hudson.tasks.Builder;
 import hudson.tasks.Shell;
@@ -47,8 +44,6 @@ public class IntegrationBuilder extends Builder {
     private BuildListener listener;
     private PrintStream logger;
 
-    private Map<String, String> dockerBuildInfo;
-
     @DataBoundConstructor
     public IntegrationBuilder(@Nullable MavenConfig mavenConfig,
                               @Nullable DockerConfig dockerConfig,
@@ -70,10 +65,6 @@ public class IntegrationBuilder extends Builder {
         return deployToK8sConfig;
     }
 
-    public Map<String, String> getDockerBuildInfo() {
-        return dockerBuildInfo;
-    }
-
     /**
      * Builder start
      */
@@ -84,7 +75,8 @@ public class IntegrationBuilder extends Builder {
         this.listener = listener;
         this.logger = listener.getLogger();
         this.workspace = checkWorkspaceValid(build.getWorkspace());
-        this.doPerformBuild(build);
+        EnvVars envVars = new EnvVars();
+        this.doPerformBuild(build, envVars);
         return true;
     }
 
@@ -93,31 +85,27 @@ public class IntegrationBuilder extends Builder {
         return (IntegrationDescriptor) super.getDescriptor();
     }
 
-    protected void doPerformBuild(AbstractBuild<?, ?> build) {
+    protected void doPerformBuild(AbstractBuild<?, ?> build, EnvVars envVars) {
         try {
-            refreshEnv();
             // fail fast if workspace is invalid
             checkWorkspaceValid(build.getWorkspace());
             // maven build
-            performMavenBuild();
+            performMavenBuild(envVars);
             // read dockerInfo
-            readDockerBuildInfo();
+            readDockerBuildInfo(envVars);
             // docker build
-            performDockerBuild();
+            performDockerBuild(envVars);
             // docker push
-            performDockerPush();
+            performDockerPush(envVars);
             // prune images
-            pruneImages();
+            pruneImages(envVars);
             // delete the built image if possible
-            deleteImageAfterBuild();
+            deleteImageAfterBuild(envVars);
             // deploy
-            deployToRemote();
+            deployToRemote(envVars);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
-    }
-
-    private void refreshEnv() {
     }
 
     /**
@@ -136,7 +124,7 @@ public class IntegrationBuilder extends Builder {
     /**
      * Build project through maven
      */
-    private void performMavenBuild() throws Exception {
+    private void performMavenBuild(EnvVars envVars) throws Exception {
         if (getMavenConfig() == null) {
             logger.println("maven build is not checked");
             return;
@@ -146,10 +134,15 @@ public class IntegrationBuilder extends Builder {
             logger.println("maven command is empty, skip maven build");
             return;
         }
-        execute(mavenCommand);
+        String javaHome = getMavenConfig().getJavaHome();
+        if (StringUtils.isNotBlank(javaHome)) {
+            envVars.put("JAVA_HOME", javaHome);
+        }
+
+        execute(mavenCommand, envVars);
     }
 
-    private void performDockerBuild() throws Exception {
+    private void performDockerBuild(EnvVars envVars) throws Exception {
         if (getDockerConfig().isDisabled()) {
             logger.println("docker build is not checked");
             return;
@@ -163,23 +156,21 @@ public class IntegrationBuilder extends Builder {
             logger.println("Dockerfile not exist, skip docker build");
             return;
         }
-        String imageName = getFullImageName();
+        String imageName = getFullImageName(envVars);
         if (imageName == null) {
             return;
         }
         String command = String.format("docker build -t %s -f %s .", imageName, FileUtils.toRelativePath(workspace, dockerfile));
-        execute(command);
+        execute(command, envVars);
     }
 
-    private void readDockerBuildInfo() throws IOException, InterruptedException {
+    private void readDockerBuildInfo(EnvVars envVars) throws IOException, InterruptedException {
+        FilePath dockerBuildInfo = lookupFile(workspace, "dockerBuildInfo", logger);
         if (dockerBuildInfo == null) {
-            FilePath dockerBuildInfo = lookupFile(workspace, "dockerBuildInfo", logger);
-            if (dockerBuildInfo == null) {
-                logger.println("dockerBuildInfo file not exist, skip docker build");
-                return;
-            }
-            this.dockerBuildInfo = filePathToMap(dockerBuildInfo);
+            logger.println("dockerBuildInfo file not exist, skip docker build");
+            return;
         }
+        envVars.putAll(filePathToMap(dockerBuildInfo));
     }
 
     private Map<String, String> filePathToMap(FilePath lookupFile) throws IOException, InterruptedException {
@@ -192,7 +183,7 @@ public class IntegrationBuilder extends Builder {
         return result;
     }
 
-    private void performDockerPush() throws Exception {
+    private void performDockerPush(EnvVars envVars) throws Exception {
         if (getDockerConfig().isDisabled()) {
             logger.println("docker build is not checked");
             return;
@@ -201,26 +192,26 @@ public class IntegrationBuilder extends Builder {
             logger.println("docker push image is skipped");
             return;
         }
-        String imageName = getFullImageName();
+        String imageName = getFullImageName(envVars);
         if (imageName == null) {
             return;
         }
         String command = String.format("docker push %s", imageName);
-        execute(command);
+        execute(command, envVars);
     }
 
-    private void pruneImages() throws Exception {
+    private void pruneImages(EnvVars envVars) throws Exception {
         if (getDockerConfig().isDisabled()) {
             logger.println("docker build is not checked");
             return;
         }
-        execute("docker image prune -f");
+        execute("docker image prune -f", envVars);
     }
 
     /**
      * Delete the image produced in the build
      */
-    private void deleteImageAfterBuild() throws Exception {
+    private void deleteImageAfterBuild(EnvVars envVars) throws Exception {
         if (getDockerConfig().isDisabled()) {
             logger.println("docker build is not checked");
             return;
@@ -230,18 +221,18 @@ public class IntegrationBuilder extends Builder {
             return;
         }
         logger.println("try to delete built image");
-        String imageName = getFullImageName();
+        String imageName = getFullImageName(envVars);
         if (imageName == null) {
             return;
         }
         String command = String.format("docker rmi -f %s", imageName);
-        execute(command);
+        execute(command, envVars);
     }
 
     /**
      * 部署镜像到远端
      */
-    private void deployToRemote() throws Exception {
+    private void deployToRemote(EnvVars envVars) throws Exception {
         DeployToK8sConfig k8sConfig = getDeployToK8sConfig();
         if (k8sConfig.isDisabled()) {
             logger.println("k8s deploy is not checked");
@@ -252,7 +243,7 @@ public class IntegrationBuilder extends Builder {
             logger.println("deploy end, because not specified file name  of k8s deploy .");
             return;
         }
-        String imageName = getFullImageName();
+        String imageName = getFullImageName(envVars);
         if (StringUtils.isEmpty(imageName)) {
             logger.println("image name is empty ,skip deploy");
             return;
@@ -263,21 +254,21 @@ public class IntegrationBuilder extends Builder {
             logger.println("not specified configLocation of k8s config ,will use default config .");
         }
 
-        resolveDeployFilePlaceholder(k8sConfig, imageName);
+        resolveDeployFilePlaceholder(k8sConfig, imageName, envVars);
 
         String command = String.format("kubectl apply -f %s", deployFileName);
         if (StringUtils.isNotBlank(configLocation)) {
             command = command + " --kubeconfig " + configLocation;
         }
 
-        execute(command);
+        execute(command, envVars);
     }
 
-    private void resolveDeployFilePlaceholder(DeployToK8sConfig k8sConfig, String imageName) throws Exception {
+    private void resolveDeployFilePlaceholder(DeployToK8sConfig k8sConfig, String imageName, EnvVars envVars) throws Exception {
         Map<String, String> param = new HashMap<>();
         param.put("IMAGE", imageName);
-        if (getDockerBuildInfo() != null) {
-            param.putAll(getDockerBuildInfo());
+        if (envVars != null) {
+            param.putAll(envVars);
         }
 
         List<Entry> entries = k8sConfig.getEntries();
@@ -298,31 +289,27 @@ public class IntegrationBuilder extends Builder {
     }
 
     @Nullable
-    private String getFullImageName() {
-        if (getDockerBuildInfo() == null) {
-            logger.println("docker build info is null");
-            return null;
-        }
+    private String getFullImageName(EnvVars envVars) {
         if (getDockerConfig().isDisabled()) {
             logger.println("docker build step is not checked");
             return null;
         }
         String registry = getDockerConfig().getPushConfig().getRegistry();
         if (StringUtils.isBlank(registry)) {
-            registry = getDockerBuildInfo().get("REGISTRY");
+            registry = envVars.get("REGISTRY");
         }
-        String appName = getDockerBuildInfo().get("APP_NAME");
+        String appName = envVars.get("APP_NAME");
         int buildNumber = build.getNumber();
         Date buildStartTime = build.getTime();
         return String.format("%s/%s:%d-%s", registry, appName, buildNumber, DateUtil.format(buildStartTime, "yyyyMMddHHmmss"));
     }
 
-    private void execute(String command) throws InterruptedException {
+    private void execute(String command, EnvVars envVars) throws InterruptedException {
         Shell shell = new Shell(command);
         EnvironmentList environments = build.getEnvironments();
         for (Environment environment : environments) {
-            if (environment instanceof DockerBuildInfoAwareEnvironment) {
-                ((DockerBuildInfoAwareEnvironment) environment).setDockerInfo(getDockerBuildInfo());
+            if (environment instanceof CustomEnvironment) {
+                ((CustomEnvironment) environment).addEnvVars(envVars);
             }
         }
         shell.perform(build, launcher, listener);

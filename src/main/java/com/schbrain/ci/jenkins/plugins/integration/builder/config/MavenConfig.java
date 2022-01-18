@@ -14,17 +14,24 @@ public class MavenConfig extends BuildConfig<MavenConfig> {
 
     private String mvnCommand;
 
+    private String javaHome;
+
     public MavenConfig() {
         setDisabled(true);
     }
 
     @DataBoundConstructor
-    public MavenConfig(String mvnCommand) {
-        this.mvnCommand = Util.fixEmpty(mvnCommand);
+    public MavenConfig(String mvnCommand, String javaHome) {
+        this.mvnCommand = Util.fixNull(mvnCommand);
+        this.javaHome = Util.fixNull(javaHome);
     }
 
     public String getMvnCommand() {
         return mvnCommand;
+    }
+
+    public String getJavaHome() {
+        return javaHome;
     }
 
     @Extension

@@ -9,8 +9,7 @@ import hudson.model.Environment;
 import hudson.model.Run.RunnerAbortedException;
 import hudson.model.listeners.RunListener;
 
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -23,25 +22,24 @@ public class EnvContributorRunListener extends RunListener<Build<?, ?>> {
 
     @Override
     public Environment setUpEnvironment(AbstractBuild build, Launcher launcher, BuildListener listener) throws RunnerAbortedException {
-        return new DockerBuildInfoAwareEnvironment();
+        return new CustomEnvironment();
     }
 
-    public static class DockerBuildInfoAwareEnvironment extends Environment {
+    public static class CustomEnvironment extends Environment {
 
-        public static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
-
-        private Map<String, String> dockerBuildInfo;
+        private final Map<String, String> envVars = new HashMap<>();
 
         @Override
         public void buildEnvVars(Map<String, String> env) {
-            env.put("DATE", DATE_TIME_FORMATTER.format(LocalDateTime.now()));
-            if (dockerBuildInfo != null) {
-                env.putAll(dockerBuildInfo);
-            }
+            env.putAll(envVars);
         }
 
-        public void setDockerInfo(Map<String, String> dockerBuildInfo) {
-            this.dockerBuildInfo = dockerBuildInfo;
+        public void addEnvVars(Map<String, String> envVars) {
+            this.envVars.putAll(envVars);
+        }
+
+        public void addEnvVars(String envKey, String value) {
+            envVars.put(envKey, value);
         }
 
     }
