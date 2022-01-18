@@ -336,10 +336,6 @@ public class IntegrationBuilder extends Builder {
         BuildEnvContributor.saveEnvVarsToDisk(envVars, workspace.getBaseName());
         Shell shell = new Shell(command);
         shell.perform(build, launcher, listener);
-        // a few more lines to see clearly
-        logger.println();
-        logger.println();
-        logger.println();
     }
 
     // can not move outside builder class
