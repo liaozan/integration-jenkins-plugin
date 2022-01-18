@@ -49,7 +49,6 @@ public class IntegrationBuilder extends Builder {
     private BuildListener listener;
     private PrintStream logger;
 
-    @Nullable
     private Map<String, String> dockerBuildInfo;
 
     @DataBoundConstructor
@@ -73,7 +72,6 @@ public class IntegrationBuilder extends Builder {
         return deployToK8sConfig;
     }
 
-    @CheckForNull
     public Map<String, String> getDockerBuildInfo() {
         return dockerBuildInfo;
     }
@@ -280,6 +278,9 @@ public class IntegrationBuilder extends Builder {
     private void resolveDeployFilePlaceholder(DeployToK8sConfig k8sConfig, String imageName) throws Exception {
         Map<String, String> param = new HashMap<>();
         param.put("IMAGE", imageName);
+        if (getDockerBuildInfo() != null) {
+            param.putAll(getDockerBuildInfo());
+        }
 
         List<Entry> entries = k8sConfig.getEntries();
         if (!CollectionUtils.isEmpty(entries)) {
@@ -297,7 +298,7 @@ public class IntegrationBuilder extends Builder {
         filePath.write(data, StandardCharsets.UTF_8.name());
     }
 
-    @CheckForNull
+    @Nullable
     private String getFullImageName() {
         if (getDockerBuildInfo() == null) {
             logger.println("docker build info is null");
