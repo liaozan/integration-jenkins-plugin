@@ -19,13 +19,13 @@ public class DeployToK8sConfig extends BuildConfig<DeployToK8sConfig> {
 
     private final String configLocation;
 
-    private final String deployFileName;
+    private final String deployFileLocation;
 
     @DataBoundConstructor
-    public DeployToK8sConfig(List<Entry> entries, String configLocation, String deployFileName) {
+    public DeployToK8sConfig(List<Entry> entries, String configLocation, String deployFileLocation) {
         this.entries = Util.fixNull(entries);
         this.configLocation = Util.fixNull(configLocation);
-        this.deployFileName = Util.fixNull(deployFileName);
+        this.deployFileLocation = Util.fixNull(deployFileLocation);
     }
 
     public List<Entry> getEntries() {
@@ -36,8 +36,8 @@ public class DeployToK8sConfig extends BuildConfig<DeployToK8sConfig> {
         return configLocation;
     }
 
-    public String getDeployFileName() {
-        return deployFileName;
+    public String getDeployFileLocation() {
+        return deployFileLocation;
     }
 
     @Extension
