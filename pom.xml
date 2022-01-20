@@ -40,6 +40,11 @@
             <artifactId>hutool-core</artifactId>
             <version>5.7.19</version>
         </dependency>
+        <dependency>
+            <groupId>org.yaml</groupId>
+            <artifactId>snakeyaml</artifactId>
+            <version>1.30</version>
+        </dependency>
     </dependencies>
 
     <build>

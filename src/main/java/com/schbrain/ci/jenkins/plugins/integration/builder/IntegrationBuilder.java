@@ -1,6 +1,5 @@
 package com.schbrain.ci.jenkins.plugins.integration.builder;
 
-import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.StrUtil;
 import com.schbrain.ci.jenkins.plugins.integration.builder.config.DeployToK8sConfig;
 import com.schbrain.ci.jenkins.plugins.integration.builder.config.DockerConfig;
@@ -9,6 +8,7 @@ import com.schbrain.ci.jenkins.plugins.integration.builder.config.MavenConfig;
 import com.schbrain.ci.jenkins.plugins.integration.builder.config.entry.Entry;
 import com.schbrain.ci.jenkins.plugins.integration.builder.env.BuildEnvContributor;
 import com.schbrain.ci.jenkins.plugins.integration.builder.util.FileUtils;
+import com.schbrain.ci.jenkins.plugins.integration.builder.util.Logger;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import hudson.EnvVars;
 import hudson.Extension;
@@ -27,10 +27,12 @@ import org.springframework.lang.Nullable;
 import org.springframework.util.CollectionUtils;
 
 import java.io.IOException;
-import java.io.PrintStream;
 import java.io.StringReader;
 import java.nio.charset.StandardCharsets;
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
 
 import static com.schbrain.ci.jenkins.plugins.integration.builder.util.FileUtils.lookupFile;
 
@@ -48,7 +50,7 @@ public class IntegrationBuilder extends Builder {
     private Launcher launcher;
     private FilePath workspace;
     private BuildListener listener;
-    private PrintStream logger;
+    private Logger logger;
 
     @DataBoundConstructor
     public IntegrationBuilder(@Nullable MavenConfig mavenConfig,
@@ -82,7 +84,7 @@ public class IntegrationBuilder extends Builder {
         this.build = build;
         this.launcher = launcher;
         this.listener = listener;
-        this.logger = listener.getLogger();
+        this.logger = new Logger(listener.getLogger());
         this.workspace = checkWorkspaceValid(build.getWorkspace());
         this.doPerformBuild(build);
         return true;
@@ -259,19 +261,19 @@ public class IntegrationBuilder extends Builder {
             return;
         }
         String deployFileName = k8sConfig.getDeployFileName();
-        if (null == deployFileName) {
-            logger.println("deploy end, because not specified file name  of k8s deploy .");
+        if (StringUtils.isBlank(deployFileName)) {
+            logger.println("deploy end, because not specified file name  of k8s deploy");
             return;
         }
         String imageName = getFullImageName(envVars);
-        if (StringUtils.isEmpty(imageName)) {
-            logger.println("image name is empty ,skip deploy");
+        if (StringUtils.isBlank(imageName)) {
+            logger.println("image name is empty, skip deploy");
             return;
         }
 
         String configLocation = k8sConfig.getConfigLocation();
-        if (null == configLocation) {
-            logger.println("not specified configLocation of k8s config ,will use default config .");
+        if (StringUtils.isBlank(configLocation)) {
+            logger.println("not specified configLocation of k8s config, will use default config");
         }
 
         resolveDeployFilePlaceholder(k8sConfig, imageName, envVars);
@@ -326,9 +328,9 @@ public class IntegrationBuilder extends Builder {
         }
 
         String appName = envVars.get("APP_NAME");
+        String version = envVars.get("VERSION");
         int buildNumber = build.getNumber();
-        Date buildStartTime = build.getTime();
-        return String.format("%s/%s:%d-%s", registry, appName, buildNumber, DateUtil.format(buildStartTime, "yyyyMMddHHmmss"));
+        return String.format("%s/%s:%s-%s", registry, appName, version, buildNumber);
     }
 
     private void execute(String command, EnvVars envVars) throws InterruptedException {

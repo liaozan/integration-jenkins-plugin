@@ -3,7 +3,7 @@
 * enjoy it
 
    ```xml
-  <profile>
+    <profile>
       <id>jenkins</id>
       <repositories>
         <repository>
