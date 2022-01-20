@@ -5,6 +5,7 @@ import com.schbrain.ci.jenkins.plugins.integration.builder.config.DeployToK8sCon
 import com.schbrain.ci.jenkins.plugins.integration.builder.config.DockerConfig;
 import com.schbrain.ci.jenkins.plugins.integration.builder.config.DockerConfig.PushConfig;
 import com.schbrain.ci.jenkins.plugins.integration.builder.config.MavenConfig;
+import com.schbrain.ci.jenkins.plugins.integration.builder.config.deploy.DeployStyleRadio;
 import com.schbrain.ci.jenkins.plugins.integration.builder.config.entry.Entry;
 import com.schbrain.ci.jenkins.plugins.integration.builder.constants.Constants;
 import com.schbrain.ci.jenkins.plugins.integration.builder.env.BuildEnvContributor;
@@ -256,9 +257,7 @@ public class IntegrationBuilder extends Builder {
         execute(command, envVars);
     }
 
-    /**
-     * 部署镜像到远端
-     */
+
     /**
      * 部署镜像到远端
      */
@@ -273,22 +272,25 @@ public class IntegrationBuilder extends Builder {
             logger.println("image name is empty ,skip deploy");
             return;
         }
-
-        String deployFileLocation = k8sConfig.getDeployFileLocation();
-        //如果没有指定部署文件，将从模版生成部署文件
-        if (StringUtils.isEmpty(deployFileLocation)) {
-            Path templatePath = downloadDeployTemplate(envVars);
-
-            deployFileLocation = new File(templatePath.getParent().toString(), Constants.DEPLOY_FILE_NAME).getPath();
-
-            resolveDeployFilePlaceholder(k8sConfig.getEntries(), imageName, envVars,
-                    templatePath.getFileName().toString(), deployFileLocation);
+        DeployStyleRadio deployStyle = k8sConfig.getDeployStyle();
+        String deployFileLocation = deployStyle.getDeployFileLocation(envVars,k8sConfig.getEntries(),imageName,workspace);
 
 
-        } else {
-            String data = StrUtil.format(deployFileLocation);
-            logger.printf("deploy info: use point deploy file.\n%s", data);
-        }
+//        String deployFileLocation = k8sConfig.getDeployFileLocation();
+//        //如果没有指定部署文件，将从模版生成部署文件
+//        if (StringUtils.isEmpty(deployFileLocation)) {
+//            Path templatePath = downloadDeployTemplate(envVars);
+//
+//            deployFileLocation = new File(templatePath.getParent().toString(), Constants.DEPLOY_FILE_NAME).getPath();
+//
+//            resolveDeployFilePlaceholder(k8sConfig.getEntries(), imageName, envVars,
+//                    templatePath.getFileName().toString(), deployFileLocation);
+//
+//
+//        } else {
+//            String data = StrUtil.format(deployFileLocation);
+//            logger.printf("deploy info: use point deploy file.\n%s", data);
+//        }
 
 
         String configLocation = k8sConfig.getConfigLocation();
@@ -306,47 +308,47 @@ public class IntegrationBuilder extends Builder {
         execute(command, envVars);
     }
 
-    private Path downloadDeployTemplate(EnvVars envVars) throws Exception {
-        FilePath existDeployTemplate = lookupFile(workspace, Constants.DEPLOY_TEMPLATE_FILE_NAME, logger);
-        if (null != existDeployTemplate) {
-            existDeployTemplate.delete();
-        }
-        String command = String.format("wget  %s", Constants.DEPLOY_TEMPLATE_URL);
-        execute(command, envVars);
-
-        return Paths.get(workspace.getRemote(), Constants.DEPLOY_TEMPLATE_FILE_NAME);
-    }
-
-
-    private void resolveDeployFilePlaceholder(List<Entry> entries, String imageName, EnvVars envVars,
-                                              String templateFileName, String deployFileLocation) throws Exception {
-        Map<String, String> param = new HashMap<>();
-        param.put("IMAGE", imageName);
-        if (envVars != null) {
-            param.putAll(envVars);
-        }
-
-        if (!CollectionUtils.isEmpty(entries)) {
-            for (Entry entry : entries) {
-                entry.contribute(param);
-            }
-        }
-
-        FilePath filePath = lookupFile(workspace, templateFileName, logger);
-        if (filePath == null) {
-            return;
-        }
-
-        String data = StrUtil.format(filePath.readToString(), param);
-        logger.printf("resolved k8sDeployFile :\n%s", data);
-        File localPath = new File(deployFileLocation);
-        if (!localPath.exists()) {
-            localPath.createNewFile();
-        }
-        FileOutputStream fos = new FileOutputStream(localPath);
-        fos.write(data.getBytes(StandardCharsets.UTF_8));
-        fos.close();
-    }
+//    private Path downloadDeployTemplate(EnvVars envVars) throws Exception {
+//        FilePath existDeployTemplate = lookupFile(workspace, Constants.DEPLOY_TEMPLATE_FILE_NAME, logger);
+//        if (null != existDeployTemplate) {
+//            existDeployTemplate.delete();
+//        }
+//        String command = String.format("wget  %s", Constants.DEPLOY_TEMPLATE_URL);
+//        execute(command, envVars);
+//
+//        return Paths.get(workspace.getRemote(), Constants.DEPLOY_TEMPLATE_FILE_NAME);
+//    }
+//
+//
+//    private void resolveDeployFilePlaceholder(List<Entry> entries, String imageName, EnvVars envVars,
+//                                              String templateFileName, String deployFileLocation) throws Exception {
+//        Map<String, String> param = new HashMap<>();
+//        param.put("IMAGE", imageName);
+//        if (envVars != null) {
+//            param.putAll(envVars);
+//        }
+//
+//        if (!CollectionUtils.isEmpty(entries)) {
+//            for (Entry entry : entries) {
+//                entry.contribute(param);
+//            }
+//        }
+//
+//        FilePath filePath = lookupFile(workspace, templateFileName, logger);
+//        if (filePath == null) {
+//            return;
+//        }
+//
+//        String data = StrUtil.format(filePath.readToString(), param);
+//        logger.printf("resolved k8sDeployFile :\n%s", data);
+//        File localPath = new File(deployFileLocation);
+//        if (!localPath.exists()) {
+//            localPath.createNewFile();
+//        }
+//        FileOutputStream fos = new FileOutputStream(localPath);
+//        fos.write(data.getBytes(StandardCharsets.UTF_8));
+//        fos.close();
+//    }
 
     @Nullable
     private String getFullImageName(EnvVars envVars) {

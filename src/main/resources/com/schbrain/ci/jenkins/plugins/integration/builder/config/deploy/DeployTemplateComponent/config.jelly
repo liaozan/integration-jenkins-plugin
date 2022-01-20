@@ -1,0 +1,16 @@
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form">
+
+    <f:entry/>
+
+    <f:entry title="命名空间" description="">
+        <f:textbox field="namespace" value="${instance.namespace}"/>
+    </f:entry>
+
+    <f:entry title="pod端口号" description="">
+        <f:textbox field="port" value="${instance.port}"/>
+    </f:entry>
+
+    <f:entry/>
+
+</j:jelly>
