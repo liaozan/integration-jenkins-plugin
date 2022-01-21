@@ -18,7 +18,7 @@ public abstract class DeployStyleRadio implements Describable<DeployStyleRadio> 
     @Override
     @SuppressWarnings("unchecked")
     public Descriptor<DeployStyleRadio> getDescriptor() {
-        return Jenkins.get().getDescriptor(PointDeployFileComponent.class);
+        return Jenkins.get().getDescriptor(getClass());
     }
 
     public abstract static class InventoryDescriptor extends Descriptor<DeployStyleRadio> {

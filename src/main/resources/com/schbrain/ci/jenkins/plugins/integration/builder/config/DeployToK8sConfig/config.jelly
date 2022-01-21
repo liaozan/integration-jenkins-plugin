@@ -7,11 +7,7 @@
         <f:textbox field="configLocation" value="${instance.configLocation}"/>
     </f:entry>
 
-    <f:entry title="部署文件路径" description="为空时默认使用部署模板文件进行变量替换后的部署文件">
-        <f:textbox field="deployFileLocation" value="${instance.deployFileLocation}"/>
-    </f:entry>
-
-    <f:entry title="选择使用部署文件方式" field="deployStyle">
+    <f:entry title="选择部署方式">
         <f:hetero-radio field="deployStyle" descriptors="${descriptor.getDeployStyles()}"/>
     </f:entry>
 

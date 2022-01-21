@@ -79,7 +79,7 @@ public class DeployTemplateComponent extends DeployStyleRadio {
         }
 
         String data = StrUtil.format(templateFile.readToString(), envVars);
-        context.log("resolved k8sDeployFile :\n" + data);
+        context.getLogger().println("resolved k8sDeployFile :\n" + data, false);
         Path resolvedLocation = Paths.get(deployFileLocation);
         if (Files.notExists(resolvedLocation)) {
             Files.createFile(resolvedLocation);

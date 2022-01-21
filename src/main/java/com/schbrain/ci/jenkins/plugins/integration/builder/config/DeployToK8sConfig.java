@@ -25,15 +25,12 @@ public class DeployToK8sConfig extends BuildConfig<DeployToK8sConfig> {
 
     private final String configLocation;
 
-    private final String deployFileLocation;
-
     private final DeployStyleRadio deployStyle;
 
     @DataBoundConstructor
-    public DeployToK8sConfig(List<Entry> entries, String configLocation, String deployFileLocation, DeployStyleRadio deployStyle) {
+    public DeployToK8sConfig(List<Entry> entries, String configLocation, DeployStyleRadio deployStyle) {
         this.entries = Util.fixNull(entries);
         this.configLocation = Util.fixNull(configLocation);
-        this.deployFileLocation = Util.fixNull(deployFileLocation);
         this.deployStyle = deployStyle;
     }
 
@@ -43,10 +40,6 @@ public class DeployToK8sConfig extends BuildConfig<DeployToK8sConfig> {
 
     public String getConfigLocation() {
         return configLocation;
-    }
-
-    public String getDeployFileLocation() {
-        return deployFileLocation;
     }
 
     public DeployStyleRadio getDeployStyle() {
