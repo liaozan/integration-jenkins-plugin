@@ -53,10 +53,6 @@ public class DeployToK8sConfig extends BuildConfig<DeployToK8sConfig> {
         return deployStyle;
     }
 
-    public List<Descriptor<DeployStyleRadio>> getDeployStyles() {
-        return Jenkins.get().getDescriptorList(DeployStyleRadio.class);
-    }
-
     public void doBuild() throws Exception {
         String imageName = envVars.get(DockerConstants.IMAGE);
         if (StringUtils.isBlank(imageName)) {
@@ -86,6 +82,10 @@ public class DeployToK8sConfig extends BuildConfig<DeployToK8sConfig> {
 
     @Extension
     public static class DescriptorImpl extends Descriptor<DeployToK8sConfig> {
+
+        public List<Descriptor<DeployStyleRadio>> getDeployStyles() {
+            return Jenkins.get().getDescriptorList(DeployStyleRadio.class);
+        }
 
     }
 

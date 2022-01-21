@@ -32,12 +32,12 @@ public class FileUtils {
     @CheckForNull
     public static FilePath lookupFile(FilePath workspace, String fileName, Logger logger) throws IOException, InterruptedException {
         if (workspace == null || !workspace.exists()) {
-            logger.println("workspace not exist");
+            logger.println("workspace not exist", true);
             return null;
         }
         FilePath[] fileList = workspace.list("**/" + fileName);
         if (fileList.length == 0) {
-            logger.println("could not found matched file: " + fileName);
+            logger.println("could not found matched file: %s", fileName);
             return null;
         }
         FilePath matchedFile = getTheClosestFile(fileList);

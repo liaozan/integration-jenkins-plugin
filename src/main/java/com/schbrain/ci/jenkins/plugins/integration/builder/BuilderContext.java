@@ -20,6 +20,7 @@ public class BuilderContext {
     private final BuildListener listener;
     private final Logger logger;
     private final EnvVars envVars;
+    private boolean shouldContinue = true;
 
     private BuilderContext(Builder builder) {
         this.build = builder.build;
@@ -31,11 +32,14 @@ public class BuilderContext {
     }
 
     public void execute(String command) throws InterruptedException {
+        if (!shouldContinue) {
+            throw new InterruptedException();
+        }
         log("%s", command);
         BuildEnvContributor.clearEnvVarsFromDisk(getWorkspace().getBaseName());
         BuildEnvContributor.saveEnvVarsToDisk(getEnvVars(), getWorkspace().getBaseName());
         Shell shell = new Shell(command);
-        shell.perform(getBuild(), getLauncher(), getListener());
+        shouldContinue = shell.perform(getBuild(), getLauncher(), getListener());
     }
 
     public AbstractBuild<?, ?> getBuild() {
