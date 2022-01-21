@@ -1,18 +1,31 @@
 package com.schbrain.ci.jenkins.plugins.integration.builder.util;
 
+import com.schbrain.ci.jenkins.plugins.integration.builder.BuilderContext;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import hudson.FilePath;
 
 import java.io.IOException;
 import java.io.PrintStream;
+import java.io.StringReader;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Properties;
 
 /**
  * @author liaozan
  * @since 2022/1/17
  */
 public class FileUtils {
+
+    /**
+     * lookup the special file
+     */
+    @CheckForNull
+    public static FilePath lookupFile(BuilderContext context, String fileName) throws IOException, InterruptedException {
+        return lookupFile(context.getWorkspace(), fileName, context.getLogger());
+    }
 
     /**
      * lookup the special file
@@ -54,6 +67,16 @@ public class FileUtils {
             }
         }
         return matched;
+    }
+
+    public static Map<String, String> filePathToMap(FilePath lookupFile) throws IOException, InterruptedException {
+        Map<String, String> result = new HashMap<>();
+        Properties properties = new Properties();
+        properties.load(new StringReader(lookupFile.readToString()));
+        for (String propertyName : properties.stringPropertyNames()) {
+            result.put(propertyName, properties.getProperty(propertyName));
+        }
+        return result;
     }
 
 }

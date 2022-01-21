@@ -23,16 +23,13 @@ public abstract class BuildConfig<T extends AbstractDescribableImpl<T>> extends 
     protected EnvVars envVars;
     protected BuilderContext context;
 
-
     public void build(BuilderContext context) throws Exception {
-        this.context=context;
+        this.context = context;
         this.build = context.getBuild();
         this.launcher = context.getLauncher();
         this.workspace = context.getWorkspace();
         this.logger = context.getLogger();
         this.envVars = context.getEnvVars();
-
-
         doBuild();
     }
 

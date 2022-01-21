@@ -1,8 +1,6 @@
 package com.schbrain.ci.jenkins.plugins.integration.builder.config;
 
-import com.schbrain.ci.jenkins.plugins.integration.builder.BuilderContext;
 import com.schbrain.ci.jenkins.plugins.integration.builder.util.FileUtils;
-import com.schbrain.ci.jenkins.plugins.integration.builder.util.Logger;
 import hudson.EnvVars;
 import hudson.Extension;
 import hudson.FilePath;
@@ -48,14 +46,12 @@ public class DockerConfig extends BuildConfig<DockerConfig> {
 
     @Override
     public void doBuild() throws Exception {
-
         if (!getBuildImage()) {
             logger.println("docker build image is skipped");
             return;
         }
 
-
-        FilePath dockerfile = lookupFile(workspace, "Dockerfile", logger);
+        FilePath dockerfile = lookupFile(context, "Dockerfile");
         if (dockerfile == null) {
             logger.println("Dockerfile not exist, skip docker build");
             return;
@@ -65,15 +61,14 @@ public class DockerConfig extends BuildConfig<DockerConfig> {
             return;
         }
         envVars.put("IMAGE_NAME", imageName);
-        String command = String.format("docker build -t %s -f %s .", imageName, FileUtils.toRelativePath(workspace, dockerfile));
 
+        String relativePath = FileUtils.toRelativePath(workspace, dockerfile);
+        String command = String.format("docker build -t %s -f %s .", imageName, relativePath);
         context.execute(command);
     }
 
     @Nullable
     private String getFullImageName(EnvVars envVars, AbstractBuild<?, ?> build) {
-
-
         String registry = null;
         PushConfig pushConfig = getPushConfig();
         if (pushConfig != null) {
@@ -81,6 +76,9 @@ public class DockerConfig extends BuildConfig<DockerConfig> {
         }
         if (StringUtils.isBlank(registry)) {
             registry = envVars.get("REGISTRY");
+        }
+        if (StringUtils.isBlank(registry)) {
+            throw new IllegalArgumentException("REGISTRY is null or empty");
         }
 
         String appName = envVars.get("APP_NAME");
@@ -125,7 +123,6 @@ public class DockerConfig extends BuildConfig<DockerConfig> {
                 return;
             }
             String command = String.format("docker push %s", imageName);
-
             context.execute(command);
         }
 

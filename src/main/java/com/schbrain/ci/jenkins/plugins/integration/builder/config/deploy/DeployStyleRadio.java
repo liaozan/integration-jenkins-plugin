@@ -12,15 +12,17 @@ import java.util.List;
  * @author zhangdd on 2022/1/20
  */
 public abstract class DeployStyleRadio implements Describable<DeployStyleRadio> {
-    @Override
-    public Descriptor<DeployStyleRadio> getDescriptor() {
 
-        return Jenkins.getInstanceOrNull().getDescriptor(DeployStyleRadio.class);
+    @Override
+    @SuppressWarnings("unchecked")
+    public Descriptor<DeployStyleRadio> getDescriptor() {
+        return Jenkins.get().getDescriptor(DeployStyleRadio.class);
     }
 
-    public abstract static class InventoryDescriptor extends Descriptor<DeployStyleRadio> { }
-
-
     public abstract String getDeployFileLocation(BuilderContext builderContext, List<Entry> entries) throws Exception;
+
+    public abstract static class InventoryDescriptor extends Descriptor<DeployStyleRadio> {
+
+    }
 
 }

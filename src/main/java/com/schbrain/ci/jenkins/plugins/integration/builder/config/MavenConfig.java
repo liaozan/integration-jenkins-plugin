@@ -33,7 +33,6 @@ public class MavenConfig extends BuildConfig<MavenConfig> {
 
     @Override
     public void doBuild() throws Exception {
-
         String mavenCommand = getMvnCommand();
         if (StringUtils.isBlank(mavenCommand)) {
             logger.println("maven command is empty, skip maven build");

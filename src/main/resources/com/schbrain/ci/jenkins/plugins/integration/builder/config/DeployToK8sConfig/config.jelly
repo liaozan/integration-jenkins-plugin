@@ -11,7 +11,7 @@
         <f:textbox field="deployFileLocation" value="${instance.deployFileLocation}"/>
     </f:entry>
 
-    <f:entry title="选择使用部署文件方式" >
+    <f:entry title="选择使用部署文件方式">
         <f:hetero-radio field="deployStyle" title="选择指定部署文件或者使用默认部署文件方式去部署" descriptors="${instance.deployStyles}"/>
     </f:entry>
 

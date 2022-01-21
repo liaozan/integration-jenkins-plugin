@@ -4,6 +4,8 @@ import com.schbrain.ci.jenkins.plugins.integration.builder.config.DeployToK8sCon
 import com.schbrain.ci.jenkins.plugins.integration.builder.config.DockerConfig;
 import com.schbrain.ci.jenkins.plugins.integration.builder.config.DockerConfig.PushConfig;
 import com.schbrain.ci.jenkins.plugins.integration.builder.config.MavenConfig;
+import com.schbrain.ci.jenkins.plugins.integration.builder.constants.Constants.DockerConstants;
+import com.schbrain.ci.jenkins.plugins.integration.builder.util.FileUtils;
 import com.schbrain.ci.jenkins.plugins.integration.builder.util.Logger;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import hudson.EnvVars;
@@ -20,10 +22,6 @@ import org.kohsuke.stapler.StaplerRequest;
 import org.springframework.lang.Nullable;
 
 import java.io.IOException;
-import java.io.StringReader;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Properties;
 
 import static com.schbrain.ci.jenkins.plugins.integration.builder.util.FileUtils.lookupFile;
 
@@ -36,8 +34,6 @@ public class IntegrationBuilder extends Builder {
     private final MavenConfig mavenConfig;
     private final DockerConfig dockerConfig;
     private final DeployToK8sConfig deployToK8sConfig;
-
-
 
     @DataBoundConstructor
     public IntegrationBuilder(@Nullable MavenConfig mavenConfig,
@@ -68,20 +64,16 @@ public class IntegrationBuilder extends Builder {
      */
     @Override
     public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws IOException, InterruptedException {
-
-        EnvVars envVars = new EnvVars();
-
+        EnvVars envVars = new EnvVars(build.getBuildVariables());
         BuilderContext builderContext = new BuilderContext.Builder()
                 .build(build)
                 .launcher(launcher)
                 .listener(listener)
-                .logger(new Logger(listener.getLogger()))
+                .logger(Logger.of(listener.getLogger()))
                 .workspace(checkWorkspaceValid(build.getWorkspace()))
                 .envVars(envVars)
                 .build();
-
         this.doPerformBuild(builderContext);
-
         return true;
     }
 
@@ -90,26 +82,24 @@ public class IntegrationBuilder extends Builder {
         return (IntegrationDescriptor) super.getDescriptor();
     }
 
-    protected void doPerformBuild(BuilderContext builderContext) {
+    protected void doPerformBuild(BuilderContext context) {
         try {
-            AbstractBuild<?, ?> build = builderContext.getBuild();
-
             // fail fast if workspace is invalid
-            checkWorkspaceValid(build.getWorkspace());
+            checkWorkspaceValid(context.getWorkspace());
             // maven build
-            performMavenBuild(builderContext);
+            performMavenBuild(context);
             // read dockerInfo
-            readDockerBuildInfo(builderContext);
+            readDockerBuildInfo(context);
             // docker build
-            performDockerBuild(builderContext);
+            performDockerBuild(context);
             // docker push
-            performDockerPush(builderContext);
+            performDockerPush(context);
             // prune images
-            pruneImages(builderContext);
+            pruneImages(context);
             // delete the built image if possible
-            deleteImageAfterBuild(builderContext);
+            deleteImageAfterBuild(context);
             // deploy
-            deployToRemote(builderContext);
+            deployToRemote(context);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -131,118 +121,99 @@ public class IntegrationBuilder extends Builder {
     /**
      * Build project through maven
      */
-    private void performMavenBuild(BuilderContext builderContext) throws Exception {
+    private void performMavenBuild(BuilderContext context) throws Exception {
         MavenConfig mavenConfig = getMavenConfig();
         if (mavenConfig == null) {
-            builderContext.getLogger().println("maven build is not checked");
+            context.log("maven build is not checked");
             return;
         }
 
-        mavenConfig.build(builderContext);
+        mavenConfig.build(context);
     }
 
-    private void performDockerBuild(BuilderContext builderContext) throws Exception {
+    private void performDockerBuild(BuilderContext context) throws Exception {
         DockerConfig dockerConfig = getDockerConfig();
-        Logger logger = builderContext.getLogger();
         if (dockerConfig == null) {
-            logger.println("docker build is not checked");
+            context.log("docker build is not checked");
             return;
         }
 
-        dockerConfig.build(builderContext);
+        dockerConfig.build(context);
     }
 
-    private void readDockerBuildInfo(BuilderContext builderContext) throws IOException, InterruptedException {
-        FilePath workspace = builderContext.getWorkspace();
-        Logger logger = builderContext.getLogger();
-        EnvVars envVars = builderContext.getEnvVars();
-        FilePath dockerBuildInfo = lookupFile(workspace, "dockerBuildInfo", logger);
+    private void readDockerBuildInfo(BuilderContext context) throws IOException, InterruptedException {
+        EnvVars envVars = context.getEnvVars();
+        FilePath dockerBuildInfo = lookupFile(context, DockerConstants.BUILD_INFO_FILE_NAME);
         if (dockerBuildInfo == null) {
-            logger.println("dockerBuildInfo file not exist, skip docker build");
+            context.log("%s file not exist, skip docker build", DockerConstants.BUILD_INFO_FILE_NAME);
             return;
         }
         // overwriting existing environment variables is not allowed
-        filePathToMap(dockerBuildInfo).forEach(envVars::putIfAbsent);
+        FileUtils.filePathToMap(dockerBuildInfo).forEach(envVars::putIfAbsent);
     }
 
-    private Map<String, String> filePathToMap(FilePath lookupFile) throws IOException, InterruptedException {
-        Map<String, String> result = new HashMap<>();
-        Properties properties = new Properties();
-        properties.load(new StringReader(lookupFile.readToString()));
-        for (String propertyName : properties.stringPropertyNames()) {
-            result.put(propertyName, properties.getProperty(propertyName));
-        }
-        return result;
-    }
-
-    private void performDockerPush(BuilderContext builderContext) throws Exception {
-        Logger logger = builderContext.getLogger();
+    private void performDockerPush(BuilderContext context) throws Exception {
         DockerConfig dockerConfig = getDockerConfig();
         if (dockerConfig == null) {
-            logger.println("docker build is not checked");
+            context.log("docker build is not checked");
             return;
         }
         PushConfig pushConfig = dockerConfig.getPushConfig();
         if (pushConfig == null) {
-            logger.println("docker push is not checked");
+            context.log("docker push is not checked");
             return;
         }
 
-        pushConfig.build(builderContext);
+        pushConfig.build(context);
     }
 
-    private void pruneImages(BuilderContext builderContext) throws Exception {
-        Logger logger = builderContext.getLogger();
+    private void pruneImages(BuilderContext context) throws Exception {
         DockerConfig dockerConfig = getDockerConfig();
         if (dockerConfig == null) {
-            logger.println("docker build is not checked");
+            context.log("docker build is not checked");
             return;
         }
-        builderContext.execute("docker image prune -f");
+        context.execute("docker image prune -f");
     }
 
     /**
      * Delete the image produced in the build
      */
-    private void deleteImageAfterBuild(BuilderContext builderContext) throws InterruptedException {
-        Logger logger = builderContext.getLogger();
-        EnvVars envVars = builderContext.getEnvVars();
+    private void deleteImageAfterBuild(BuilderContext context) throws InterruptedException {
+        EnvVars envVars = context.getEnvVars();
         DockerConfig dockerConfig = getDockerConfig();
 
         if (dockerConfig == null) {
-            logger.println("docker build is not checked");
+            context.log("docker build is not checked");
             return;
         }
         if (!dockerConfig.getDeleteImageAfterBuild()) {
-            logger.println("delete built image is skip");
+            context.log("delete built image is skip");
             return;
         }
 
-        logger.println("try to delete built image");
+        context.log("try to delete built image");
         String imageName = envVars.get("IMAGE_NAME");
         if (imageName == null) {
             return;
         }
+
         String command = String.format("docker rmi -f %s", imageName);
-
-        builderContext.execute(command);
+        context.execute(command);
     }
-
 
     /**
      * 部署镜像到远端
      */
-    private void deployToRemote(BuilderContext builderContext) throws Exception {
+    private void deployToRemote(BuilderContext context) throws Exception {
         DeployToK8sConfig k8sConfig = getDeployToK8sConfig();
         if (k8sConfig == null) {
-            builderContext.getLogger().println("k8s deploy is not checked");
+            context.getLogger().println("k8s deploy is not checked");
             return;
         }
 
-        k8sConfig.build(builderContext);
+        k8sConfig.build(context);
     }
-
-
 
     // can not move outside builder class
     @Extension

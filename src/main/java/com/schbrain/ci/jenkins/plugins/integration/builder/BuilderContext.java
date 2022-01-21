@@ -21,7 +21,6 @@ public class BuilderContext {
     private final Logger logger;
     private final EnvVars envVars;
 
-
     private BuilderContext(Builder builder) {
         this.build = builder.build;
         this.launcher = builder.launcher;
@@ -31,8 +30,8 @@ public class BuilderContext {
         this.envVars = builder.envVars;
     }
 
-
     public void execute(String command) throws InterruptedException {
+        log("start to execute command: %s", command);
         BuildEnvContributor.clearEnvVarsFromDisk(getWorkspace().getBaseName());
         BuildEnvContributor.saveEnvVarsToDisk(getEnvVars(), getWorkspace().getBaseName());
         Shell shell = new Shell(command);
@@ -63,7 +62,12 @@ public class BuilderContext {
         return envVars;
     }
 
+    public void log(String template, Object... arguments) {
+        logger.println(template, arguments);
+    }
+
     public static class Builder {
+
         private AbstractBuild<?, ?> build;
         private Launcher launcher;
         private FilePath workspace;
@@ -101,12 +105,11 @@ public class BuilderContext {
             return this;
         }
 
-
         public BuilderContext build() {
 
             return new BuilderContext(this);
         }
 
-
     }
+
 }

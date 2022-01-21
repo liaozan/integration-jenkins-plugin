@@ -1,10 +1,7 @@
 package com.schbrain.ci.jenkins.plugins.integration.builder.config;
 
-import com.schbrain.ci.jenkins.plugins.integration.builder.BuilderContext;
 import com.schbrain.ci.jenkins.plugins.integration.builder.config.deploy.DeployStyleRadio;
 import com.schbrain.ci.jenkins.plugins.integration.builder.config.entry.Entry;
-import com.schbrain.ci.jenkins.plugins.integration.builder.util.Logger;
-import hudson.EnvVars;
 import hudson.Extension;
 import hudson.Util;
 import hudson.model.Descriptor;
@@ -54,9 +51,8 @@ public class DeployToK8sConfig extends BuildConfig<DeployToK8sConfig> {
     }
 
     public List<Descriptor<DeployStyleRadio>> getDeployStyles() {
-        return Jenkins.getInstanceOrNull().getDescriptorList(DeployStyleRadio.class);
+        return Jenkins.get().getDescriptorList(DeployStyleRadio.class);
     }
-
 
     public void doBuild() throws Exception {
 
@@ -67,21 +63,17 @@ public class DeployToK8sConfig extends BuildConfig<DeployToK8sConfig> {
             return;
         }
 
-
         DeployStyleRadio deployStyle = getDeployStyle();
         if (null == deployStyle) {
             return;
         }
 
-
         String deployFileLocation = deployStyle.getDeployFileLocation(context, getEntries());
-
 
         String configLocation = getConfigLocation();
         if (null == configLocation) {
             logger.println("not specified configLocation of k8s config ,will use default config .");
         }
-
 
         String command = String.format("kubectl apply -f %s", deployFileLocation);
         if (StringUtils.isNotBlank(configLocation)) {
@@ -91,7 +83,6 @@ public class DeployToK8sConfig extends BuildConfig<DeployToK8sConfig> {
 
         context.execute(command);
     }
-
 
     @Extension
     public static class DescriptorImpl extends Descriptor<DeployToK8sConfig> {
