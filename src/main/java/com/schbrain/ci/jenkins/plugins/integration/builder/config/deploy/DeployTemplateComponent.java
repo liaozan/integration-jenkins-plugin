@@ -7,6 +7,8 @@ import com.schbrain.ci.jenkins.plugins.integration.builder.constants.Constants.D
 import hudson.EnvVars;
 import hudson.Extension;
 import hudson.FilePath;
+import hudson.model.Descriptor;
+import jenkins.model.Jenkins;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.springframework.util.CollectionUtils;
 
@@ -47,6 +49,12 @@ public class DeployTemplateComponent extends DeployStyleRadio {
         String deployFileLocation = new File(templatePath.getParent().toString(), DeployConstants.DEPLOY_FILE_NAME).getPath();
         resolveDeployFilePlaceholder(entries, templatePath.getFileName().toString(), deployFileLocation, builderContext);
         return deployFileLocation;
+    }
+
+    @Override
+    @SuppressWarnings({"unchecked"})
+    public Descriptor<DeployStyleRadio> getDescriptor() {
+        return Jenkins.get().getDescriptor(DeployTemplateComponent.class);
     }
 
     private Path downloadDeployTemplate(BuilderContext context) throws Exception {
