@@ -2,7 +2,10 @@ package com.schbrain.ci.jenkins.plugins.integration.builder.config;
 
 import com.schbrain.ci.jenkins.plugins.integration.builder.config.deploy.DeployStyleRadio;
 import com.schbrain.ci.jenkins.plugins.integration.builder.config.entry.Entry;
+import com.schbrain.ci.jenkins.plugins.integration.builder.constants.Constants.DockerConstants;
+import com.schbrain.ci.jenkins.plugins.integration.builder.util.FileUtils;
 import hudson.Extension;
+import hudson.FilePath;
 import hudson.Util;
 import hudson.model.Descriptor;
 import jenkins.model.Jenkins;
@@ -55,10 +58,8 @@ public class DeployToK8sConfig extends BuildConfig<DeployToK8sConfig> {
     }
 
     public void doBuild() throws Exception {
-
-        String imageName = envVars.get("IMAGE_NAME");
-
-        if (StringUtils.isEmpty(imageName)) {
+        String imageName = envVars.get(DockerConstants.IMAGE);
+        if (StringUtils.isBlank(imageName)) {
             logger.println("image name is empty ,skip deploy");
             return;
         }
@@ -68,19 +69,18 @@ public class DeployToK8sConfig extends BuildConfig<DeployToK8sConfig> {
             return;
         }
 
-        String deployFileLocation = deployStyle.getDeployFileLocation(context, getEntries());
-
         String configLocation = getConfigLocation();
         if (null == configLocation) {
             logger.println("not specified configLocation of k8s config ,will use default config .");
         }
 
-        String command = String.format("kubectl apply -f %s", deployFileLocation);
+        String deployFileLocation = deployStyle.getDeployFileLocation(context, getEntries());
+        String deployFileRelativePath = FileUtils.toRelativePath(workspace, new FilePath(workspace, deployFileLocation));
+
+        String command = String.format("kubectl apply -f %s", deployFileRelativePath);
         if (StringUtils.isNotBlank(configLocation)) {
             command = command + " --kubeconfig " + configLocation;
         }
-        logger.println("will execute command:" + command);
-
         context.execute(command);
     }
 

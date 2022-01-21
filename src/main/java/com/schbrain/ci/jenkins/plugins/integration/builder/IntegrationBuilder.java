@@ -5,7 +5,6 @@ import com.schbrain.ci.jenkins.plugins.integration.builder.config.DockerConfig;
 import com.schbrain.ci.jenkins.plugins.integration.builder.config.DockerConfig.PushConfig;
 import com.schbrain.ci.jenkins.plugins.integration.builder.config.MavenConfig;
 import com.schbrain.ci.jenkins.plugins.integration.builder.constants.Constants.DockerConstants;
-import com.schbrain.ci.jenkins.plugins.integration.builder.util.FileUtils;
 import com.schbrain.ci.jenkins.plugins.integration.builder.util.Logger;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import hudson.EnvVars;
@@ -22,8 +21,6 @@ import org.kohsuke.stapler.StaplerRequest;
 import org.springframework.lang.Nullable;
 
 import java.io.IOException;
-
-import static com.schbrain.ci.jenkins.plugins.integration.builder.util.FileUtils.lookupFile;
 
 /**
  * @author liaozan
@@ -88,8 +85,6 @@ public class IntegrationBuilder extends Builder {
             checkWorkspaceValid(context.getWorkspace());
             // maven build
             performMavenBuild(context);
-            // read dockerInfo
-            readDockerBuildInfo(context);
             // docker build
             performDockerBuild(context);
             // docker push
@@ -141,17 +136,6 @@ public class IntegrationBuilder extends Builder {
         dockerConfig.build(context);
     }
 
-    private void readDockerBuildInfo(BuilderContext context) throws IOException, InterruptedException {
-        EnvVars envVars = context.getEnvVars();
-        FilePath dockerBuildInfo = lookupFile(context, DockerConstants.BUILD_INFO_FILE_NAME);
-        if (dockerBuildInfo == null) {
-            context.log("%s file not exist, skip docker build", DockerConstants.BUILD_INFO_FILE_NAME);
-            return;
-        }
-        // overwriting existing environment variables is not allowed
-        FileUtils.filePathToMap(dockerBuildInfo).forEach(envVars::putIfAbsent);
-    }
-
     private void performDockerPush(BuilderContext context) throws Exception {
         DockerConfig dockerConfig = getDockerConfig();
         if (dockerConfig == null) {
@@ -180,9 +164,7 @@ public class IntegrationBuilder extends Builder {
      * Delete the image produced in the build
      */
     private void deleteImageAfterBuild(BuilderContext context) throws InterruptedException {
-        EnvVars envVars = context.getEnvVars();
         DockerConfig dockerConfig = getDockerConfig();
-
         if (dockerConfig == null) {
             context.log("docker build is not checked");
             return;
@@ -192,8 +174,7 @@ public class IntegrationBuilder extends Builder {
             return;
         }
 
-        context.log("try to delete built image");
-        String imageName = envVars.get("IMAGE_NAME");
+        String imageName = context.getEnvVars().get(DockerConstants.IMAGE);
         if (imageName == null) {
             return;
         }
@@ -208,7 +189,7 @@ public class IntegrationBuilder extends Builder {
     private void deployToRemote(BuilderContext context) throws Exception {
         DeployToK8sConfig k8sConfig = getDeployToK8sConfig();
         if (k8sConfig == null) {
-            context.getLogger().println("k8s deploy is not checked");
+            context.log("k8s deploy is not checked");
             return;
         }
 

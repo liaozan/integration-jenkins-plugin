@@ -1,5 +1,6 @@
 package com.schbrain.ci.jenkins.plugins.integration.builder.config;
 
+import com.schbrain.ci.jenkins.plugins.integration.builder.constants.Constants.DockerConstants;
 import com.schbrain.ci.jenkins.plugins.integration.builder.util.FileUtils;
 import hudson.EnvVars;
 import hudson.Extension;
@@ -47,20 +48,20 @@ public class DockerConfig extends BuildConfig<DockerConfig> {
     @Override
     public void doBuild() throws Exception {
         if (!getBuildImage()) {
-            logger.println("docker build image is skipped");
+            context.log("docker build image is skipped");
             return;
         }
 
         FilePath dockerfile = lookupFile(context, "Dockerfile");
         if (dockerfile == null) {
-            logger.println("Dockerfile not exist, skip docker build");
+            context.log("Dockerfile not exist, skip docker build");
             return;
         }
         String imageName = getFullImageName(envVars, build);
         if (imageName == null) {
             return;
         }
-        envVars.put("IMAGE_NAME", imageName);
+        envVars.put(DockerConstants.IMAGE, imageName);
 
         String relativePath = FileUtils.toRelativePath(workspace, dockerfile);
         String command = String.format("docker build -t %s -f %s .", imageName, relativePath);
@@ -75,14 +76,14 @@ public class DockerConfig extends BuildConfig<DockerConfig> {
             registry = pushConfig.getRegistry();
         }
         if (StringUtils.isBlank(registry)) {
-            registry = envVars.get("REGISTRY");
+            registry = envVars.get(DockerConstants.REGISTRY);
         }
         if (StringUtils.isBlank(registry)) {
             throw new IllegalArgumentException("REGISTRY is null or empty");
         }
 
-        String appName = envVars.get("APP_NAME");
-        String version = envVars.get("VERSION");
+        String appName = envVars.get(DockerConstants.APP_NAME);
+        String version = envVars.get(DockerConstants.VERSION);
         int buildNumber = build.getNumber();
         return String.format("%s/%s:%s-%s", registry, appName, version, buildNumber);
     }
@@ -118,7 +119,7 @@ public class DockerConfig extends BuildConfig<DockerConfig> {
                 return;
             }
 
-            String imageName = envVars.get("IMAGE_NAME");
+            String imageName = envVars.get(DockerConstants.IMAGE);
             if (imageName == null) {
                 return;
             }

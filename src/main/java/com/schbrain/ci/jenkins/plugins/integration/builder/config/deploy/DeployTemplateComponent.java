@@ -49,22 +49,21 @@ public class DeployTemplateComponent extends DeployStyleRadio {
         return deployFileLocation;
     }
 
-    private Path downloadDeployTemplate(BuilderContext builderContext) throws Exception {
-        FilePath workspace = builderContext.getWorkspace();
-        FilePath existDeployTemplate = lookupFile(builderContext, DeployConstants.TEMPLATE_FILE_NAME);
+    private Path downloadDeployTemplate(BuilderContext context) throws Exception {
+        FilePath workspace = context.getWorkspace();
+        FilePath existDeployTemplate = lookupFile(context, DeployConstants.TEMPLATE_FILE_NAME);
         if (null != existDeployTemplate) {
             existDeployTemplate.delete();
         }
         String command = String.format("wget  %s", DeployConstants.TEMPLATE_URL);
-        builderContext.execute(command);
+        context.execute(command);
 
         return Paths.get(workspace.getRemote(), DeployConstants.TEMPLATE_FILE_NAME);
     }
 
     private void resolveDeployFilePlaceholder(List<Entry> entries, String templateFileName,
-                                              String deployFileLocation, BuilderContext builderContext) throws Exception {
-        EnvVars envVars = builderContext.getEnvVars();
-        envVars.put("IMAGE", envVars.get("IMAGE_NAME"));
+                                              String deployFileLocation, BuilderContext context) throws Exception {
+        EnvVars envVars = context.getEnvVars();
         envVars.put("NAMESPACE", getNamespace());
         envVars.put("PORT", getPort());
 
@@ -74,13 +73,13 @@ public class DeployTemplateComponent extends DeployStyleRadio {
             }
         }
 
-        FilePath templateFile = lookupFile(builderContext, templateFileName);
+        FilePath templateFile = lookupFile(context, templateFileName);
         if (templateFile == null) {
             return;
         }
 
         String data = StrUtil.format(templateFile.readToString(), envVars);
-        builderContext.log("resolved k8sDeployFile :\n%s", data);
+        context.log("resolved k8sDeployFile :\n%s", data);
         Path resolvedLocation = Paths.get(deployFileLocation);
         if (Files.notExists(resolvedLocation)) {
             Files.createFile(resolvedLocation);

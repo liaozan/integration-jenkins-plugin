@@ -10,6 +10,7 @@ import java.util.List;
 /**
  * @author zhangdd on 2022/1/20
  */
+@SuppressWarnings("unused")
 public class PointDeployFileComponent extends DeployStyleRadio {
 
     private final String deployFileLocation;
@@ -24,7 +25,7 @@ public class PointDeployFileComponent extends DeployStyleRadio {
     }
 
     @Override
-    public String getDeployFileLocation(BuilderContext builderContext, List<Entry> entries) throws Exception {
+    public String getDeployFileLocation(BuilderContext builderContext, List<Entry> entries) {
         return getDeployFileLocation();
     }
 

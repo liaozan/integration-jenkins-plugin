@@ -1,10 +1,18 @@
 package com.schbrain.ci.jenkins.plugins.integration.builder.config;
 
+import com.schbrain.ci.jenkins.plugins.integration.builder.constants.Constants.DockerConstants;
+import com.schbrain.ci.jenkins.plugins.integration.builder.util.FileUtils;
+import hudson.EnvVars;
 import hudson.Extension;
+import hudson.FilePath;
 import hudson.Util;
 import hudson.model.Descriptor;
 import org.apache.commons.lang.StringUtils;
 import org.kohsuke.stapler.DataBoundConstructor;
+
+import java.io.IOException;
+
+import static com.schbrain.ci.jenkins.plugins.integration.builder.util.FileUtils.lookupFile;
 
 /**
  * @author liaozan
@@ -45,6 +53,18 @@ public class MavenConfig extends BuildConfig<MavenConfig> {
         }
 
         context.execute(mavenCommand);
+        readDockerBuildInfo();
+    }
+
+    private void readDockerBuildInfo() throws IOException, InterruptedException {
+        EnvVars envVars = context.getEnvVars();
+        FilePath dockerBuildInfo = lookupFile(context, DockerConstants.BUILD_INFO_FILE_NAME);
+        if (dockerBuildInfo == null) {
+            context.log("%s file not exist, skip docker build", DockerConstants.BUILD_INFO_FILE_NAME);
+            return;
+        }
+        // overwriting existing environment variables is not allowed
+        FileUtils.filePathToMap(dockerBuildInfo).forEach(envVars::putIfAbsent);
     }
 
     @Extension

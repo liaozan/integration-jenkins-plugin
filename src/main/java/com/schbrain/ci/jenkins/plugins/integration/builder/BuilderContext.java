@@ -31,7 +31,7 @@ public class BuilderContext {
     }
 
     public void execute(String command) throws InterruptedException {
-        log("start to execute command: %s", command);
+        log("%s", command);
         BuildEnvContributor.clearEnvVarsFromDisk(getWorkspace().getBaseName());
         BuildEnvContributor.saveEnvVarsToDisk(getEnvVars(), getWorkspace().getBaseName());
         Shell shell = new Shell(command);
@@ -62,8 +62,16 @@ public class BuilderContext {
         return envVars;
     }
 
+    public void log(String template) {
+        log(template, (Object) null);
+    }
+
     public void log(String template, Object... arguments) {
-        logger.println(template, arguments);
+        logger.println(template, true, arguments);
+    }
+
+    public void log(String template, boolean format, Object... arguments) {
+        logger.println(template, format, arguments);
     }
 
     public static class Builder {

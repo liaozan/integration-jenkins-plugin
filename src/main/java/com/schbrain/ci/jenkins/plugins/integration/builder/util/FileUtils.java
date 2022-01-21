@@ -5,7 +5,6 @@ import edu.umd.cs.findbugs.annotations.CheckForNull;
 import hudson.FilePath;
 
 import java.io.IOException;
-import java.io.PrintStream;
 import java.io.StringReader;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -31,7 +30,7 @@ public class FileUtils {
      * lookup the special file
      */
     @CheckForNull
-    public static FilePath lookupFile(FilePath workspace, String fileName, PrintStream logger) throws IOException, InterruptedException {
+    public static FilePath lookupFile(FilePath workspace, String fileName, Logger logger) throws IOException, InterruptedException {
         if (workspace == null || !workspace.exists()) {
             logger.println("workspace not exist");
             return null;
@@ -44,7 +43,7 @@ public class FileUtils {
         FilePath matchedFile = getTheClosestFile(fileList);
         String relativePath = toRelativePath(workspace, matchedFile);
         String fileContent = matchedFile.readToString();
-        logger.printf("lookup for %s found at %s,  content: \n%s", fileName, relativePath, fileContent);
+        logger.println("looking for the file of %s found at %s", fileName, relativePath, fileContent);
         return matchedFile;
     }
 
