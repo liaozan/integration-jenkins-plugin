@@ -70,7 +70,12 @@ public class IntegrationBuilder extends Builder {
                 .workspace(checkWorkspaceValid(build.getWorkspace()))
                 .envVars(envVars)
                 .build();
-        this.doPerformBuild(builderContext);
+        try {
+            this.doPerformBuild(builderContext);
+        } catch (Exception e) {
+            e.printStackTrace(listener.getLogger());
+            return false;
+        }
         return true;
     }
 
@@ -79,25 +84,21 @@ public class IntegrationBuilder extends Builder {
         return (IntegrationDescriptor) super.getDescriptor();
     }
 
-    protected void doPerformBuild(BuilderContext context) {
-        try {
-            // fail fast if workspace is invalid
-            checkWorkspaceValid(context.getWorkspace());
-            // maven build
-            performMavenBuild(context);
-            // docker build
-            performDockerBuild(context);
-            // docker push
-            performDockerPush(context);
-            // prune images
-            pruneImages(context);
-            // delete the built image if possible
-            deleteImageAfterBuild(context);
-            // deploy
-            deployToRemote(context);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
+    protected void doPerformBuild(BuilderContext context) throws Exception {
+        // fail fast if workspace is invalid
+        checkWorkspaceValid(context.getWorkspace());
+        // maven build
+        performMavenBuild(context);
+        // docker build
+        performDockerBuild(context);
+        // docker push
+        performDockerPush(context);
+        // prune images
+        pruneImages(context);
+        // delete the built image if possible
+        deleteImageAfterBuild(context);
+        // deploy
+        deployToRemote(context);
     }
 
     /**

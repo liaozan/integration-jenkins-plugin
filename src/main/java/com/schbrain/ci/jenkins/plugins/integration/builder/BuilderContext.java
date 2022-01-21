@@ -33,7 +33,7 @@ public class BuilderContext {
 
     public void execute(String command) throws InterruptedException {
         if (!shouldContinue) {
-            throw new InterruptedException();
+            throw new IllegalStateException("build task has been interrupted");
         }
         log("%s", command);
         BuildEnvContributor.clearEnvVarsFromDisk(getWorkspace().getBaseName());
@@ -72,10 +72,6 @@ public class BuilderContext {
 
     public void log(String template, Object... arguments) {
         logger.println(template, true, arguments);
-    }
-
-    public void log(String template, boolean format, Object... arguments) {
-        logger.println(template, format, arguments);
     }
 
     public static class Builder {

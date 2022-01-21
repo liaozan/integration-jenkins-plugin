@@ -56,7 +56,7 @@ public class DeployToK8sConfig extends BuildConfig<DeployToK8sConfig> {
     public void doBuild() throws Exception {
         String imageName = envVars.get(DockerConstants.IMAGE);
         if (StringUtils.isBlank(imageName)) {
-            logger.println("image name is empty ,skip deploy");
+            context.log("image name is empty ,skip deploy");
             return;
         }
 
@@ -67,7 +67,7 @@ public class DeployToK8sConfig extends BuildConfig<DeployToK8sConfig> {
 
         String configLocation = getConfigLocation();
         if (null == configLocation) {
-            logger.println("not specified configLocation of k8s config ,will use default config .");
+            context.log("not specified configLocation of k8s config ,will use default config .");
         }
 
         String deployFileLocation = deployStyle.getDeployFileLocation(context, getEntries());

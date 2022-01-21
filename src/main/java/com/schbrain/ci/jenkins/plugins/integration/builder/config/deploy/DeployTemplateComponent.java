@@ -7,8 +7,6 @@ import com.schbrain.ci.jenkins.plugins.integration.builder.constants.Constants.D
 import hudson.EnvVars;
 import hudson.Extension;
 import hudson.FilePath;
-import hudson.model.Descriptor;
-import jenkins.model.Jenkins;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.springframework.util.CollectionUtils;
 
@@ -51,12 +49,6 @@ public class DeployTemplateComponent extends DeployStyleRadio {
         return deployFileLocation;
     }
 
-    @Override
-    @SuppressWarnings({"unchecked"})
-    public Descriptor<DeployStyleRadio> getDescriptor() {
-        return Jenkins.get().getDescriptor(DeployTemplateComponent.class);
-    }
-
     private Path downloadDeployTemplate(BuilderContext context) throws Exception {
         FilePath workspace = context.getWorkspace();
         FilePath existDeployTemplate = lookupFile(context, DeployConstants.TEMPLATE_FILE_NAME);
@@ -87,7 +79,7 @@ public class DeployTemplateComponent extends DeployStyleRadio {
         }
 
         String data = StrUtil.format(templateFile.readToString(), envVars);
-        context.log("resolved k8sDeployFile :\n%s", data);
+        context.log("resolved k8sDeployFile :\n" + data);
         Path resolvedLocation = Paths.get(deployFileLocation);
         if (Files.notExists(resolvedLocation)) {
             Files.createFile(resolvedLocation);
