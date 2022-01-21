@@ -1,9 +1,8 @@
 package com.schbrain.ci.jenkins.plugins.integration.builder.config.deploy;
 
+import com.schbrain.ci.jenkins.plugins.integration.builder.BuilderContext;
 import com.schbrain.ci.jenkins.plugins.integration.builder.config.entry.Entry;
-import hudson.EnvVars;
 import hudson.Extension;
-import hudson.FilePath;
 import org.kohsuke.stapler.DataBoundConstructor;
 
 import java.util.List;
@@ -25,7 +24,7 @@ public class PointDeployFileComponent extends DeployStyleRadio {
     }
 
     @Override
-    public String getDeployFileLocation(EnvVars envVars, List<Entry> entries, String imageName, FilePath workspace) throws Exception {
+    public String getDeployFileLocation(BuilderContext builderContext, List<Entry> entries) throws Exception {
         return getDeployFileLocation();
     }
 

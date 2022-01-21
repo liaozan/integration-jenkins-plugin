@@ -1,8 +1,10 @@
 package com.schbrain.ci.jenkins.plugins.integration.builder.config.deploy;
 
 import cn.hutool.core.util.StrUtil;
+import com.schbrain.ci.jenkins.plugins.integration.builder.BuilderContext;
 import com.schbrain.ci.jenkins.plugins.integration.builder.config.entry.Entry;
 import com.schbrain.ci.jenkins.plugins.integration.builder.constants.Constants;
+import com.schbrain.ci.jenkins.plugins.integration.builder.util.Logger;
 import hudson.EnvVars;
 import hudson.Extension;
 import hudson.FilePath;
@@ -45,35 +47,39 @@ public class DeployTemplateComponent extends DeployStyleRadio {
     }
 
     @Override
-    public String getDeployFileLocation(EnvVars envVars, List<Entry> entries, String imageName, FilePath workspace) throws Exception{
-        Path templatePath = downloadDeployTemplate(envVars,workspace);
+    public String getDeployFileLocation(BuilderContext builderContext, List<Entry> entries) throws Exception {
+        EnvVars envVars = builderContext.getEnvVars();
+        FilePath workspace = builderContext.getWorkspace();
+        Logger logger = builderContext.getLogger();
 
-      String  deployFileLocation = new File(templatePath.getParent().toString(), Constants.DEPLOY_FILE_NAME).getPath();
+        Path templatePath = downloadDeployTemplate(builderContext, workspace, logger);
 
-        resolveDeployFilePlaceholder(entries, imageName, envVars,
-                templatePath.getFileName().toString(), deployFileLocation,workspace);
+        String deployFileLocation = new File(templatePath.getParent().toString(), Constants.DEPLOY_FILE_NAME).getPath();
+
+        resolveDeployFilePlaceholder(entries, envVars,
+                templatePath.getFileName().toString(), deployFileLocation, workspace, logger);
         return deployFileLocation;
     }
 
-    private Path downloadDeployTemplate(EnvVars envVars,FilePath workspace) throws Exception {
+    private Path downloadDeployTemplate(BuilderContext builderContext, FilePath workspace, Logger logger) throws Exception {
         FilePath existDeployTemplate = lookupFile(workspace, Constants.DEPLOY_TEMPLATE_FILE_NAME, logger);
         if (null != existDeployTemplate) {
             existDeployTemplate.delete();
         }
         String command = String.format("wget  %s", Constants.DEPLOY_TEMPLATE_URL);
-        execute(command, envVars);
+        builderContext.execute(command);
 
         return Paths.get(workspace.getRemote(), Constants.DEPLOY_TEMPLATE_FILE_NAME);
     }
 
-    private void resolveDeployFilePlaceholder(List<Entry> entries, String imageName, EnvVars envVars,
+    private void resolveDeployFilePlaceholder(List<Entry> entries, EnvVars envVars,
                                               String templateFileName, String deployFileLocation,
-                                              FilePath workspace) throws Exception {
-        Map<String, String> param = new HashMap<>();
-        param.put("IMAGE", imageName);
-        if (envVars != null) {
-            param.putAll(envVars);
-        }
+                                              FilePath workspace, Logger logger) throws Exception {
+        Map<String, String> param = new HashMap<>(envVars);
+        param.put("IMAGE", envVars.get("IMAGE_NAME"));
+        param.put("NAMESPACE", getNamespace());
+        param.put("PORT", getPort());
+
 
         if (!CollectionUtils.isEmpty(entries)) {
             for (Entry entry : entries) {

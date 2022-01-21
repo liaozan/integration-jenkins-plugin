@@ -1,8 +1,7 @@
 package com.schbrain.ci.jenkins.plugins.integration.builder.config.deploy;
 
+import com.schbrain.ci.jenkins.plugins.integration.builder.BuilderContext;
 import com.schbrain.ci.jenkins.plugins.integration.builder.config.entry.Entry;
-import hudson.EnvVars;
-import hudson.FilePath;
 import hudson.model.Describable;
 import hudson.model.Descriptor;
 import jenkins.model.Jenkins;
@@ -22,6 +21,6 @@ public abstract class DeployStyleRadio implements Describable<DeployStyleRadio> 
     public abstract static class InventoryDescriptor extends Descriptor<DeployStyleRadio> { }
 
 
-    public abstract String getDeployFileLocation(EnvVars envVars, List<Entry> entries, String imageName, FilePath workspace) throws Exception;
+    public abstract String getDeployFileLocation(BuilderContext builderContext, List<Entry> entries) throws Exception;
 
 }

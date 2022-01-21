@@ -3,6 +3,7 @@ package com.schbrain.ci.jenkins.plugins.integration.builder.config;
 import hudson.Extension;
 import hudson.Util;
 import hudson.model.Descriptor;
+import org.apache.commons.lang.StringUtils;
 import org.kohsuke.stapler.DataBoundConstructor;
 
 /**
@@ -28,6 +29,23 @@ public class MavenConfig extends BuildConfig<MavenConfig> {
 
     public String getJavaHome() {
         return javaHome;
+    }
+
+    @Override
+    public void doBuild() throws Exception {
+
+        String mavenCommand = getMvnCommand();
+        if (StringUtils.isBlank(mavenCommand)) {
+            logger.println("maven command is empty, skip maven build");
+            return;
+        }
+
+        String javaHome = getJavaHome();
+        if (StringUtils.isNotBlank(javaHome)) {
+            envVars.put("JAVA_HOME", javaHome);
+        }
+
+        context.execute(mavenCommand);
     }
 
     @Extension
