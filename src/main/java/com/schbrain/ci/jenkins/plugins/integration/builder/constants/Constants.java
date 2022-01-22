@@ -7,7 +7,7 @@ public class Constants {
 
     public static class DeployConstants {
 
-        public static final String TEMPLATE_URL = "http://gitlab.schbrain.com/gitlab/zhangdongdong/deploy-script/-/raw/master/k8s-deploy-template.yaml";
+        public static final String TEMPLATE_URL = "http://gitlab.schbrain.com/gitlab/tools/build-script/-/raw/master/k8s-deploy-template.yaml?";
         public static final String TEMPLATE_FILE_NAME = TEMPLATE_URL.substring(TEMPLATE_URL.lastIndexOf("/"));
         public static final String DEPLOY_FILE_NAME = "deploy.yaml";
 
