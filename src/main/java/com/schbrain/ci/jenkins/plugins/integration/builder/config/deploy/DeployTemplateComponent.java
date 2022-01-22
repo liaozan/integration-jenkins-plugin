@@ -44,7 +44,7 @@ public class DeployTemplateComponent extends DeployStyleRadio {
     @Override
     public String getDeployFileLocation(BuilderContext builderContext, List<Entry> entries) throws Exception {
         Path templatePath = downloadDeployTemplate(builderContext);
-        String deployFileLocation = templatePath.toString();
+        String deployFileLocation = new File(templatePath.getParent().toString(), DeployConstants.DEPLOY_FILE_NAME).getPath();
         resolveDeployFilePlaceholder(entries, templatePath.getFileName().toString(), deployFileLocation, builderContext);
         return deployFileLocation;
     }
