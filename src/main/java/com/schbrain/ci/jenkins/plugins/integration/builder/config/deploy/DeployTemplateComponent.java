@@ -55,7 +55,7 @@ public class DeployTemplateComponent extends DeployStyleRadio {
         if (null != existDeployTemplate) {
             existDeployTemplate.delete();
         }
-        String command = String.format("wget  %s", DeployConstants.TEMPLATE_URL);
+        String command = String.format("wget  %s %s", DeployConstants.TEMPLATE_URL, "-q");
         context.execute(command);
 
         return Paths.get(workspace.getRemote(), DeployConstants.TEMPLATE_FILE_NAME);
