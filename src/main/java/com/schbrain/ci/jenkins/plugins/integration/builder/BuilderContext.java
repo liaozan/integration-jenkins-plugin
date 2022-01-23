@@ -35,7 +35,7 @@ public class BuilderContext {
     }
 
     public void executeWithRetry(String command, int retryCount) {
-        boolean shouldContinue = false;
+        boolean canContinue = true;
         int retryTimes = 0;
         do {
             try {
@@ -43,12 +43,16 @@ public class BuilderContext {
                 BuildEnvContributor.clearEnvVarsFromDisk(getWorkspace().getBaseName());
                 BuildEnvContributor.saveEnvVarsToDisk(getEnvVars(), getWorkspace().getBaseName());
                 Shell shell = new Shell(command);
-                shouldContinue = shell.perform(getBuild(), getLauncher(), getListener());
-            } catch (Exception e) {
-                retryTimes++;
+                canContinue = shell.perform(getBuild(), getLauncher(), getListener());
+            } catch (Exception exception) {
+                exception.printStackTrace(logger);
+            } finally {
+                if (!canContinue) {
+                    ++retryTimes;
+                }
             }
-        } while (retryTimes < retryCount);
-        if (!shouldContinue) {
+        } while (retryTimes < retryCount && !canContinue);
+        if (!canContinue) {
             throw new IllegalStateException("build task has been interrupted");
         }
     }
