@@ -1,9 +1,9 @@
 package com.schbrain.ci.jenkins.plugins.integration.builder.config.deploy;
 
-import cn.hutool.core.util.StrUtil;
 import com.schbrain.ci.jenkins.plugins.integration.builder.BuilderContext;
 import com.schbrain.ci.jenkins.plugins.integration.builder.config.entry.Entry;
 import com.schbrain.ci.jenkins.plugins.integration.builder.constants.Constants.DeployConstants;
+import com.schbrain.ci.jenkins.plugins.integration.builder.util.TemplateUtils;
 import hudson.EnvVars;
 import hudson.Extension;
 import hudson.FilePath;
@@ -25,16 +25,22 @@ import static com.schbrain.ci.jenkins.plugins.integration.builder.util.FileUtils
 public class DeployTemplateComponent extends DeployStyleRadio {
 
     private final String namespace;
+    private final String replicas;
     private final String port;
 
     @DataBoundConstructor
-    public DeployTemplateComponent(String namespace, String port) {
+    public DeployTemplateComponent(String namespace, String replicas, String port) {
         this.namespace = namespace;
+        this.replicas = replicas;
         this.port = port;
     }
 
     public String getNamespace() {
         return namespace;
+    }
+
+    public String getReplicas() {
+        return replicas;
     }
 
     public String getPort() {
@@ -66,6 +72,7 @@ public class DeployTemplateComponent extends DeployStyleRadio {
         EnvVars envVars = context.getEnvVars();
         envVars.put("NAMESPACE", getNamespace());
         envVars.put("PORT", getPort());
+        envVars.put("REPLICAS", getReplicas());
 
         if (!CollectionUtils.isEmpty(entries)) {
             for (Entry entry : entries) {
@@ -78,7 +85,7 @@ public class DeployTemplateComponent extends DeployStyleRadio {
             return;
         }
 
-        String data = StrUtil.format(templateFile.readToString(), envVars);
+        String data = TemplateUtils.format(templateFile.readToString(), envVars);
         context.getLogger().println("resolved k8sDeployFile :\n" + data, false);
         Path resolvedLocation = Paths.get(deployFileLocation);
         if (Files.notExists(resolvedLocation)) {

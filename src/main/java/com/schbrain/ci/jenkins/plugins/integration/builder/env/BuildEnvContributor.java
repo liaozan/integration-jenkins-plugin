@@ -1,6 +1,6 @@
 package com.schbrain.ci.jenkins.plugins.integration.builder.env;
 
-import cn.hutool.core.io.FileUtil;
+import com.schbrain.ci.jenkins.plugins.integration.builder.util.FileUtils;
 import hudson.EnvVars;
 import hudson.Extension;
 import hudson.model.AbstractBuild;
@@ -24,14 +24,14 @@ public class BuildEnvContributor extends BuildVariableContributor {
     private static final String DELIMITER = "=";
 
     public static void saveEnvVarsToDisk(EnvVars envVars, String baseName) {
-        FileUtil.writeUtf8Map(envVars, getEnvFilePath(baseName), DELIMITER, false);
+        FileUtils.writeUtf8Map(envVars, getEnvVarsFile(baseName), DELIMITER);
     }
 
     public static void clearEnvVarsFromDisk(String baseName) {
-        FileUtil.writeUtf8String("", getEnvFilePath(baseName));
+        FileUtils.writeUtf8String("", getEnvVarsFile(baseName));
     }
 
-    private static File getEnvFilePath(String baseName) {
+    private static File getEnvVarsFile(String baseName) {
         File directory = new File(System.getProperty("java.io.tmpdir"), baseName);
         if (!directory.exists()) {
             // noinspection ResultOfMethodCallIgnored
@@ -52,9 +52,9 @@ public class BuildEnvContributor extends BuildVariableContributor {
     @Override
     public void buildVariablesFor(AbstractBuild build, Map<String, String> variables) {
         // noinspection ConstantConditions
-        File envFilePath = getEnvFilePath(build.getWorkspace().getBaseName());
+        File envFilePath = getEnvVarsFile(build.getWorkspace().getBaseName());
         EnvVars envVars = new EnvVars();
-        for (String line : FileUtil.readUtf8Lines(envFilePath)) {
+        for (String line : FileUtils.readUtf8Lines(envFilePath)) {
             String[] variablePair = line.split(DELIMITER);
             // variables may not be split by =
             if (variablePair.length != 1) {

@@ -85,20 +85,26 @@ public class IntegrationBuilder extends Builder {
     }
 
     protected void doPerformBuild(BuilderContext context) throws Exception {
-        // fail fast if workspace is invalid
-        checkWorkspaceValid(context.getWorkspace());
-        // maven build
-        performMavenBuild(context);
-        // docker build
-        performDockerBuild(context);
-        // docker push
-        performDockerPush(context);
-        // prune images
-        pruneImages(context);
-        // delete the built image if possible
-        deleteImageAfterBuild(context);
-        // deploy
-        deployToRemote(context);
+        try {
+            // fail fast if workspace is invalid
+            checkWorkspaceValid(context.getWorkspace());
+            // maven build
+            performMavenBuild(context);
+            // docker build
+            performDockerBuild(context);
+            // docker push
+            performDockerPush(context);
+            // deploy
+            deployToRemote(context);
+        } catch (Exception exception) {
+            exception.printStackTrace(context.getLogger());
+            throw exception;
+        } finally {
+            // prune images
+            pruneImages(context);
+            // delete the built image if possible
+            deleteImageAfterBuild(context);
+        }
     }
 
     /**

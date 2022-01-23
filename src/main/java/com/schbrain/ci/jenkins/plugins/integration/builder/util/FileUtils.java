@@ -4,12 +4,19 @@ import com.schbrain.ci.jenkins.plugins.integration.builder.BuilderContext;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import hudson.FilePath;
 
+import java.io.BufferedWriter;
+import java.io.File;
 import java.io.IOException;
 import java.io.StringReader;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Properties;
 
 /**
@@ -76,6 +83,55 @@ public class FileUtils {
             result.put(propertyName, properties.getProperty(propertyName));
         }
         return result;
+    }
+
+    public static void writeUtf8String(String content, File file) {
+        writeUtf8String(content, file.getPath());
+    }
+
+    public static void writeUtf8String(String content, String path) {
+        writeString(content, path, StandardCharsets.UTF_8);
+    }
+
+    public static void writeString(String content, String path, Charset charset) {
+        try {
+            Path filePath = getFilePath(path);
+            Files.write(filePath, content.getBytes(charset));
+        } catch (IOException e) {
+            throw new IllegalStateException(e);
+        }
+    }
+
+    public static void writeUtf8Map(Map<String, String> variables, File file, String delimiter) {
+        try {
+            Path filePath = getFilePath(file.getPath());
+            BufferedWriter writer = Files.newBufferedWriter(filePath);
+            for (Entry<String, String> entry : variables.entrySet()) {
+                String content = String.format("{%s}{%s}{%s}", entry.getKey(), delimiter, entry.getValue());
+                writer.write(content);
+                writer.newLine();
+                writer.flush();
+            }
+        } catch (IOException e) {
+            throw new IllegalStateException(e);
+        }
+    }
+
+    public static List<String> readUtf8Lines(File file) {
+        try {
+            Path filePath = getFilePath(file.getPath());
+            return Files.readAllLines(filePath);
+        } catch (IOException e) {
+            throw new IllegalStateException(e);
+        }
+    }
+
+    private static Path getFilePath(String path) throws IOException {
+        Path filePath = Paths.get(path);
+        if (Files.notExists(filePath)) {
+            Files.createFile(filePath);
+        }
+        return filePath;
     }
 
 }

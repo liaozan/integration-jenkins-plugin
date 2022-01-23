@@ -3,11 +3,15 @@
 
     <f:entry/>
 
-    <f:entry title="命名空间" description="">
+    <f:entry title="命名空间">
         <f:textbox field="namespace" value="${instance.namespace}"/>
     </f:entry>
 
-    <f:entry title="pod端口号" description="">
+    <f:entry title="副本数">
+        <f:textbox field="replicas" value="${instance.replicate}" default="1"/>
+    </f:entry>
+
+    <f:entry title="pod端口号">
         <f:textbox field="port" value="${instance.port}"/>
     </f:entry>
 
