@@ -20,7 +20,6 @@ public class BuilderContext {
     private final BuildListener listener;
     private final Logger logger;
     private final EnvVars envVars;
-    private boolean shouldContinue = true;
 
     private BuilderContext(Builder builder) {
         this.build = builder.build;
@@ -32,14 +31,26 @@ public class BuilderContext {
     }
 
     public void execute(String command) throws InterruptedException {
+        executeWithRetry(command, 2);
+    }
+
+    public void executeWithRetry(String command, int retryCount) {
+        boolean shouldContinue = false;
+        int retryTimes = 0;
+        do {
+            try {
+                log("%s", command);
+                BuildEnvContributor.clearEnvVarsFromDisk(getWorkspace().getBaseName());
+                BuildEnvContributor.saveEnvVarsToDisk(getEnvVars(), getWorkspace().getBaseName());
+                Shell shell = new Shell(command);
+                shouldContinue = shell.perform(getBuild(), getLauncher(), getListener());
+            } catch (Exception e) {
+                retryTimes++;
+            }
+        } while (retryTimes < retryCount);
         if (!shouldContinue) {
             throw new IllegalStateException("build task has been interrupted");
         }
-        log("%s", command);
-        BuildEnvContributor.clearEnvVarsFromDisk(getWorkspace().getBaseName());
-        BuildEnvContributor.saveEnvVarsToDisk(getEnvVars(), getWorkspace().getBaseName());
-        Shell shell = new Shell(command);
-        shouldContinue = shell.perform(getBuild(), getLauncher(), getListener());
     }
 
     public AbstractBuild<?, ?> getBuild() {
