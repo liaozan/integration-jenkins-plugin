@@ -48,23 +48,19 @@ public class DeployTemplateComponent extends DeployStyleRadio {
     }
 
     @Override
-    public String getDeployFileLocation(BuilderContext builderContext, List<Entry> entries) throws Exception {
-        Path templatePath = downloadDeployTemplate(builderContext);
+    public String getDeployFileLocation(BuilderContext context, List<Entry> entries) throws Exception {
+        Path templatePath = getDeployTemplate(context);
         String deployFileLocation = new File(templatePath.getParent().toString(), DeployConstants.DEPLOY_FILE_NAME).getPath();
-        resolveDeployFilePlaceholder(entries, templatePath.getFileName().toString(), deployFileLocation, builderContext);
+        resolveDeployFilePlaceholder(entries, templatePath.getFileName().toString(), deployFileLocation, context);
         return deployFileLocation;
     }
 
-    private Path downloadDeployTemplate(BuilderContext context) throws Exception {
-        FilePath workspace = context.getWorkspace();
+    private Path getDeployTemplate(BuilderContext context) throws Exception {
         FilePath existDeployTemplate = lookupFile(context, DeployConstants.TEMPLATE_FILE_NAME);
         if (null != existDeployTemplate) {
             existDeployTemplate.delete();
         }
-        String command = String.format("wget  %s %s", DeployConstants.TEMPLATE_URL, "-q");
-        context.execute(command);
-
-        return Paths.get(workspace.getRemote(), DeployConstants.TEMPLATE_FILE_NAME);
+        return Paths.get(context.getEnvVars().get("BUILD_SCRIPT"), DeployConstants.TEMPLATE_FILE_NAME);
     }
 
     private void resolveDeployFilePlaceholder(List<Entry> entries, String templateFileName,
