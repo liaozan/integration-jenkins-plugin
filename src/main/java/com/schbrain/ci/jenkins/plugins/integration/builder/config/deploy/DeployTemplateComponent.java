@@ -6,18 +6,14 @@ import com.schbrain.ci.jenkins.plugins.integration.builder.constants.Constants.D
 import com.schbrain.ci.jenkins.plugins.integration.builder.util.TemplateUtils;
 import hudson.EnvVars;
 import hudson.Extension;
-import hudson.FilePath;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.springframework.util.CollectionUtils;
 
-import java.io.File;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
-
-import static com.schbrain.ci.jenkins.plugins.integration.builder.util.FileUtils.lookupFile;
 
 /**
  * @author zhangdd on 2022/1/20
@@ -49,22 +45,26 @@ public class DeployTemplateComponent extends DeployStyleRadio {
 
     @Override
     public String getDeployFileLocation(BuilderContext context, List<Entry> entries) throws Exception {
-        Path templatePath = getDeployTemplate(context);
-        String deployFileLocation = new File(templatePath.getParent().toString(), DeployConstants.DEPLOY_FILE_NAME).getPath();
-        resolveDeployFilePlaceholder(entries, templatePath.getFileName().toString(), deployFileLocation, context);
-        return deployFileLocation;
+        Path templateFile = getDeployTemplate(context);
+        Path deployFile = Paths.get(templateFile.getParent().toString(), DeployConstants.DEPLOY_FILE_NAME);
+        resolveDeployFilePlaceholder(templateFile, deployFile, entries, context);
+        return deployFile.toString();
     }
 
-    private Path getDeployTemplate(BuilderContext context) throws Exception {
-        FilePath existDeployTemplate = lookupFile(context, DeployConstants.TEMPLATE_FILE_NAME);
-        if (null != existDeployTemplate) {
-            existDeployTemplate.delete();
+    private Path getDeployTemplate(BuilderContext context) {
+        String buildScriptDirectory = context.getEnvVars().get("BUILD_SCRIPT");
+        return Paths.get(buildScriptDirectory, DeployConstants.TEMPLATE_FILE_NAME);
+    }
+
+    private void resolveDeployFilePlaceholder(Path templateFile, Path deployFile,
+                                              List<Entry> entries, BuilderContext context) throws Exception {
+        if (templateFile == null) {
+            return;
         }
-        return Paths.get(context.getEnvVars().get("BUILD_SCRIPT"), DeployConstants.TEMPLATE_FILE_NAME);
-    }
+        if (Files.notExists(deployFile)) {
+            Files.createFile(deployFile);
+        }
 
-    private void resolveDeployFilePlaceholder(List<Entry> entries, String templateFileName,
-                                              String deployFileLocation, BuilderContext context) throws Exception {
         EnvVars envVars = context.getEnvVars();
         envVars.put("NAMESPACE", getNamespace());
         envVars.put("PORT", getPort());
@@ -75,19 +75,10 @@ public class DeployTemplateComponent extends DeployStyleRadio {
                 entry.contribute(envVars);
             }
         }
-
-        FilePath templateFile = lookupFile(context, templateFileName);
-        if (templateFile == null) {
-            return;
-        }
-
-        String data = TemplateUtils.format(templateFile.readToString(), envVars);
+        String templateContent = new String(Files.readAllBytes(templateFile), StandardCharsets.UTF_8);
+        String data = TemplateUtils.format(templateContent, envVars);
         context.getLogger().println("resolved k8sDeployFile :\n" + data, false);
-        Path resolvedLocation = Paths.get(deployFileLocation);
-        if (Files.notExists(resolvedLocation)) {
-            Files.createFile(resolvedLocation);
-        }
-        Files.write(resolvedLocation, data.getBytes(StandardCharsets.UTF_8));
+        Files.write(deployFile, data.getBytes(StandardCharsets.UTF_8));
     }
 
     @Extension
