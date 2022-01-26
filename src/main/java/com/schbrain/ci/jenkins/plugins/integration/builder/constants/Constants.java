@@ -21,6 +21,13 @@ public class Constants {
         public static final String VERSION = "VERSION";
         public static final String BUILD_SCRIPT = "BUILD_SCRIPT";
 
+    }
+
+    public static class GitConstants {
+
+        public static final String GIT_PROPERTIES_FILE = "git.properties";
+        public static final String GIT_BRANCH = "git.branch";
+        public static final String GIT_COMMITTER = "git.build.user.name";
 
     }
 

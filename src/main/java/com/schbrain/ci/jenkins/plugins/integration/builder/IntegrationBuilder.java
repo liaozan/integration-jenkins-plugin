@@ -5,6 +5,8 @@ import com.schbrain.ci.jenkins.plugins.integration.builder.config.DockerConfig;
 import com.schbrain.ci.jenkins.plugins.integration.builder.config.DockerConfig.PushConfig;
 import com.schbrain.ci.jenkins.plugins.integration.builder.config.MavenConfig;
 import com.schbrain.ci.jenkins.plugins.integration.builder.constants.Constants.DockerConstants;
+import com.schbrain.ci.jenkins.plugins.integration.builder.constants.Constants.GitConstants;
+import com.schbrain.ci.jenkins.plugins.integration.builder.util.FileUtils;
 import com.schbrain.ci.jenkins.plugins.integration.builder.util.Logger;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import hudson.EnvVars;
@@ -21,6 +23,7 @@ import org.kohsuke.stapler.StaplerRequest;
 import org.springframework.lang.Nullable;
 
 import java.io.IOException;
+import java.util.Map;
 
 /**
  * @author liaozan
@@ -104,7 +107,22 @@ public class IntegrationBuilder extends Builder {
             pruneImages(context);
             // delete the built image if possible
             deleteImageAfterBuild(context);
+            // setup description
+            setBuildDescription(context);
         }
+    }
+
+    private void setBuildDescription(BuilderContext context) throws IOException, InterruptedException {
+        FilePath gitPropertiesFile = FileUtils.lookupFile(context, GitConstants.GIT_PROPERTIES_FILE);
+        if (gitPropertiesFile == null) {
+            return;
+        }
+        Map<String, String> gitProperties = FileUtils.filePathToMap(gitPropertiesFile);
+        String author = gitProperties.get(GitConstants.GIT_COMMITTER);
+        String branch = gitProperties.get(GitConstants.GIT_BRANCH);
+        AbstractBuild<?, ?> build = context.getBuild();
+        String description = String.format("author: %s, branch: %s", author, branch);
+        build.setDescription(description);
     }
 
     /**
