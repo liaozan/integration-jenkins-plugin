@@ -27,7 +27,7 @@ public class Constants {
 
         public static final String GIT_PROPERTIES_FILE = "git.properties";
         public static final String GIT_BRANCH = "git.branch";
-        public static final String GIT_COMMITTER = "git.build.user.name";
+        public static final String GIT_COMMITTER = "git.commit.user.name";
 
     }
 
