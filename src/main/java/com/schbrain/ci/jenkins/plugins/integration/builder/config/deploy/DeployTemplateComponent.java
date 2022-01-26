@@ -2,6 +2,7 @@ package com.schbrain.ci.jenkins.plugins.integration.builder.config.deploy;
 
 import com.schbrain.ci.jenkins.plugins.integration.builder.BuilderContext;
 import com.schbrain.ci.jenkins.plugins.integration.builder.config.entry.Entry;
+import com.schbrain.ci.jenkins.plugins.integration.builder.constants.Constants;
 import com.schbrain.ci.jenkins.plugins.integration.builder.constants.Constants.DeployConstants;
 import com.schbrain.ci.jenkins.plugins.integration.builder.util.TemplateUtils;
 import hudson.EnvVars;
@@ -52,7 +53,7 @@ public class DeployTemplateComponent extends DeployStyleRadio {
     }
 
     private Path getDeployTemplate(BuilderContext context) {
-        String buildScriptDirectory = context.getEnvVars().get("BUILD_SCRIPT");
+        String buildScriptDirectory = context.getEnvVars().get(Constants.DockerConstants.BUILD_SCRIPT);
         return Paths.get(buildScriptDirectory, DeployConstants.TEMPLATE_FILE_NAME);
     }
 
