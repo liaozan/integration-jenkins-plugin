@@ -1,9 +1,7 @@
-### Develop
-* first: add the following content to your maven settings.xml
-* second: active jenkins profile on your ide
-* enjoy it
-
-   ```xml
+### How to develop
+*  add the following content to your maven settings.xml
+*  active jenkins profile on your ide
+```xml
     <profile>
       <id>jenkins</id>
       <repositories>
@@ -19,6 +17,6 @@
         </pluginRepository>
       </pluginRepositories>
     </profile>
-  ```
+ ```
 ### How to build
 run `mvn clean package -Dmaven.test.skip` in terminal, plugin will be stored in the target directory named `integration-jenkins-plugin.hpi`, upload it to your jenkins server 
