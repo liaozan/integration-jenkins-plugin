@@ -107,7 +107,7 @@ public class FileUtils {
             Path filePath = getFilePath(file.getPath());
             BufferedWriter writer = Files.newBufferedWriter(filePath);
             for (Entry<String, String> entry : variables.entrySet()) {
-                String content = String.format("{%s}{%s}{%s}", entry.getKey(), delimiter, entry.getValue());
+                String content = String.format("%s%s%s", entry.getKey(), delimiter, entry.getValue());
                 writer.write(content);
                 writer.newLine();
                 writer.flush();
