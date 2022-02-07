@@ -4,9 +4,7 @@ import com.schbrain.ci.jenkins.plugins.integration.builder.config.deploy.DeployS
 import com.schbrain.ci.jenkins.plugins.integration.builder.config.entry.Entry;
 import com.schbrain.ci.jenkins.plugins.integration.builder.constants.Constants.DockerConstants;
 import com.schbrain.ci.jenkins.plugins.integration.builder.util.FileUtils;
-import hudson.Extension;
-import hudson.FilePath;
-import hudson.Util;
+import hudson.*;
 import hudson.model.Descriptor;
 import jenkins.model.Jenkins;
 import org.apache.commons.lang.StringUtils;

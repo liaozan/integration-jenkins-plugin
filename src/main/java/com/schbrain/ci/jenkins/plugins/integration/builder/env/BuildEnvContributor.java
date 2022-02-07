@@ -3,13 +3,9 @@ package com.schbrain.ci.jenkins.plugins.integration.builder.env;
 import com.schbrain.ci.jenkins.plugins.integration.builder.util.FileUtils;
 import hudson.EnvVars;
 import hudson.Extension;
-import hudson.model.AbstractBuild;
-import hudson.model.BuildVariableContributor;
-import hudson.model.Environment;
+import hudson.model.*;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.PrintStream;
+import java.io.*;
 import java.util.HashMap;
 import java.util.Map;
 

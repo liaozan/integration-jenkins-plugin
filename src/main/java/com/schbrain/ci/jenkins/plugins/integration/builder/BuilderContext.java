@@ -2,9 +2,7 @@ package com.schbrain.ci.jenkins.plugins.integration.builder;
 
 import com.schbrain.ci.jenkins.plugins.integration.builder.env.BuildEnvContributor;
 import com.schbrain.ci.jenkins.plugins.integration.builder.util.Logger;
-import hudson.EnvVars;
-import hudson.FilePath;
-import hudson.Launcher;
+import hudson.*;
 import hudson.model.AbstractBuild;
 import hudson.model.BuildListener;
 import hudson.tasks.Shell;
@@ -35,7 +33,7 @@ public class BuilderContext {
     }
 
     public void executeWithRetry(String command, int retryCount) {
-        boolean canContinue = true;
+        boolean completed = true;
         int retryTimes = 0;
         do {
             try {
@@ -43,16 +41,16 @@ public class BuilderContext {
                 BuildEnvContributor.clearEnvVarsFromDisk(getWorkspace().getBaseName());
                 BuildEnvContributor.saveEnvVarsToDisk(getEnvVars(), getWorkspace().getBaseName());
                 Shell shell = new Shell(command);
-                canContinue = shell.perform(getBuild(), getLauncher(), getListener());
+                completed = shell.perform(getBuild(), getLauncher(), getListener());
             } catch (Exception exception) {
                 exception.printStackTrace(logger);
             } finally {
-                if (!canContinue) {
+                if (!completed) {
                     ++retryTimes;
                 }
             }
-        } while (retryTimes < retryCount && !canContinue);
-        if (!canContinue) {
+        } while (retryTimes < retryCount && !completed);
+        if (!completed) {
             throw new IllegalStateException("build task has been interrupted");
         }
     }
@@ -129,7 +127,6 @@ public class BuilderContext {
         }
 
         public BuilderContext build() {
-
             return new BuilderContext(this);
         }
 
