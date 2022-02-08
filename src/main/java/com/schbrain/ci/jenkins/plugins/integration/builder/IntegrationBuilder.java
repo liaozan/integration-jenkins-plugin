@@ -22,6 +22,7 @@ import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.StaplerRequest;
 import org.springframework.lang.Nullable;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.Map;
 
@@ -89,6 +90,8 @@ public class IntegrationBuilder extends Builder {
 
     protected void doPerformBuild(BuilderContext context) throws Exception {
         try {
+            // download build-script
+            downloadBuildScript(context);
             // maven build
             performMavenBuild(context);
             // docker build
@@ -105,6 +108,15 @@ public class IntegrationBuilder extends Builder {
             // setup description
             setBuildDescription(context);
         }
+    }
+
+    private void downloadBuildScript(BuilderContext context) throws InterruptedException {
+        File buildScriptDir = FileManager.getBuildScriptDir(context.getBuild());
+        File buildScripts = new File(buildScriptDir, "build-script.zip");
+        String archiveCommand = String.format("git archive -o %s --format=zip --remote=%s %s", buildScripts, "git@gitlab.schbrain.com:tools/build-script.git", "main");
+        context.execute(archiveCommand);
+        String unzipCommand = String.format("unzip %s -d %s", buildScripts, buildScriptDir);
+        context.execute(unzipCommand);
     }
 
     private void setBuildDescription(BuilderContext context) throws IOException, InterruptedException {

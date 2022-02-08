@@ -21,4 +21,14 @@ public class FileManager {
         return envVarsFile;
     }
 
+    public static File getBuildScriptDir(AbstractBuild<?, ?> build) {
+        File rootDir = build.getRootDir();
+        File buildScriptDir = new File(rootDir, "build-script");
+        if (!buildScriptDir.exists()) {
+            // noinspection ResultOfMethodCallIgnored
+            buildScriptDir.mkdirs();
+        }
+        return buildScriptDir;
+    }
+
 }

@@ -4,12 +4,20 @@ import com.schbrain.ci.jenkins.plugins.integration.builder.BuilderContext;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import hudson.FilePath;
 
-import java.io.*;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.IOException;
+import java.io.StringReader;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.*;
-import java.util.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Properties;
 
 /**
  * @author liaozan
@@ -29,18 +37,18 @@ public class FileUtils {
      * lookup the special file
      */
     @CheckForNull
-    public static FilePath lookupFile(FilePath workspace, String fileName, Logger logger) throws IOException, InterruptedException {
-        if (workspace == null || !workspace.exists()) {
-            logger.println("workspace not exist", true);
+    public static FilePath lookupFile(FilePath searchLocation, String fileName, Logger logger) throws IOException, InterruptedException {
+        if (searchLocation == null || !searchLocation.exists()) {
+            logger.println("searchLocation not exist", true);
             return null;
         }
-        FilePath[] fileList = workspace.list("**/" + fileName);
+        FilePath[] fileList = searchLocation.list("**/" + fileName);
         if (fileList.length == 0) {
             logger.println("could not found matched file: %s", fileName);
             return null;
         }
         FilePath matchedFile = getTheClosestFile(fileList);
-        String relativePath = toRelativePath(workspace, matchedFile);
+        String relativePath = toRelativePath(searchLocation, matchedFile);
         String fileContent = matchedFile.readToString();
         logger.println("looking for the file of %s found at %s", fileName, relativePath, fileContent);
         return matchedFile;

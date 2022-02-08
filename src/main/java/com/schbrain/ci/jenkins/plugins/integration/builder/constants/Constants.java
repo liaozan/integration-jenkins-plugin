@@ -15,6 +15,7 @@ public class Constants {
     public static class DockerConstants {
 
         public static final String BUILD_INFO_FILE_NAME = "dockerBuildInfo";
+        public static final String DOCKERFILE_NAME = "Dockerfile";
         public static final String IMAGE = "IMAGE";
         public static final String REGISTRY = "REGISTRY";
         public static final String APP_NAME = "APP_NAME";

@@ -1,7 +1,9 @@
 package com.schbrain.ci.jenkins.plugins.integration.builder.config;
 
+import com.schbrain.ci.jenkins.plugins.integration.builder.FileManager;
 import com.schbrain.ci.jenkins.plugins.integration.builder.constants.Constants.DockerConstants;
 import com.schbrain.ci.jenkins.plugins.integration.builder.util.FileUtils;
+import hudson.EnvVars;
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.Util;
@@ -9,6 +11,8 @@ import hudson.model.Descriptor;
 import org.apache.commons.lang.StringUtils;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.springframework.lang.Nullable;
+
+import java.io.IOException;
 
 import static com.schbrain.ci.jenkins.plugins.integration.builder.util.FileUtils.lookupFile;
 
@@ -50,11 +54,15 @@ public class DockerConfig extends BuildConfig<DockerConfig> {
             return;
         }
 
-        FilePath dockerfile = lookupFile(context, "Dockerfile");
+        FilePath buildScriptDir = new FilePath(FileManager.getBuildScriptDir(build));
+        FilePath dockerfile = lookupFile(buildScriptDir, DockerConstants.DOCKERFILE_NAME, context.getLogger());
         if (dockerfile == null) {
             context.log("Dockerfile not exist, skip docker build");
             return;
         }
+
+        resolveDockerfilePlaceHolder(dockerfile);
+
         String imageName = getFullImageName();
         if (imageName == null) {
             return;
@@ -64,6 +72,22 @@ public class DockerConfig extends BuildConfig<DockerConfig> {
         String relativePath = FileUtils.toRelativePath(workspace, dockerfile);
         String command = String.format("docker build -t %s -f %s .", imageName, relativePath);
         context.execute(command);
+    }
+
+    private void resolveDockerfilePlaceHolder(FilePath dockerfile) throws IOException, InterruptedException {
+        readDockerBuildInfo();
+        // TODO: 2022/2/8  zhangdd
+    }
+
+    private void readDockerBuildInfo() throws IOException, InterruptedException {
+        EnvVars envVars = context.getEnvVars();
+        FilePath dockerBuildInfo = lookupFile(context, DockerConstants.BUILD_INFO_FILE_NAME);
+        if (dockerBuildInfo == null) {
+            context.log("%s file not exist, skip docker build", DockerConstants.BUILD_INFO_FILE_NAME);
+            return;
+        }
+        // overwriting existing environment variables is not allowed
+        FileUtils.filePathToMap(dockerBuildInfo).forEach(envVars::putIfAbsent);
     }
 
     private String getFullImageName() {
