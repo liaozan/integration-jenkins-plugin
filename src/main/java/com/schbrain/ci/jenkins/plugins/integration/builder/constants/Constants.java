@@ -5,6 +5,14 @@ package com.schbrain.ci.jenkins.plugins.integration.builder.constants;
  */
 public class Constants {
 
+    public static class BuildConstants {
+
+        public static final String SCRIPT_GIT_REPO = "git@gitlab.schbrain.com:tools/build-script.git";
+        public static final String SCRIPT_GIT_BRANCH = "refactor-plugin-logic";
+        public static final String SCRIPT_NAME = "build-script.zip";
+
+    }
+
     public static class DeployConstants {
 
         public static final String TEMPLATE_FILE_NAME = "k8s-deploy-template.yaml";
@@ -20,7 +28,6 @@ public class Constants {
         public static final String REGISTRY = "REGISTRY";
         public static final String APP_NAME = "APP_NAME";
         public static final String VERSION = "VERSION";
-        public static final String BUILD_SCRIPT = "BUILD_SCRIPT";
 
     }
 

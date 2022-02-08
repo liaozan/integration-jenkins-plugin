@@ -9,23 +9,26 @@ import java.io.IOException;
  * @author liaozan
  * @since 2022/2/8
  */
+@SuppressWarnings("ResultOfMethodCallIgnored")
 public class FileManager {
 
+    public static File getCacheDir(AbstractBuild<?, ?> build) {
+        return build.getRootDir();
+    }
+
     public static File getEnvVarsFile(AbstractBuild<?, ?> build) throws IOException {
-        File rootDir = build.getRootDir();
-        File envVarsFile = new File(rootDir, "envVars");
+        File cacheDir = getCacheDir(build);
+        File envVarsFile = new File(cacheDir, "envVars");
         if (!envVarsFile.exists()) {
-            // noinspection ResultOfMethodCallIgnored
             envVarsFile.createNewFile();
         }
         return envVarsFile;
     }
 
     public static File getBuildScriptDir(AbstractBuild<?, ?> build) {
-        File rootDir = build.getRootDir();
-        File buildScriptDir = new File(rootDir, "build-script");
+        File cacheDir = getCacheDir(build);
+        File buildScriptDir = new File(cacheDir, "build-script");
         if (!buildScriptDir.exists()) {
-            // noinspection ResultOfMethodCallIgnored
             buildScriptDir.mkdirs();
         }
         return buildScriptDir;

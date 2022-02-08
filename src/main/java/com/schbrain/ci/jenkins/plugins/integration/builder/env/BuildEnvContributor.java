@@ -23,10 +23,9 @@ public class BuildEnvContributor extends BuildVariableContributor {
     private static final String DELIMITER = "=";
 
     public static void saveEnvVarsToDisk(BuilderContext context) throws IOException {
-        EnvVars envVars = context.getEnvVars();
-        AbstractBuild<?, ?> build = context.getBuild();
-        FileUtils.writeUtf8String("", FileManager.getEnvVarsFile(build));
-        FileUtils.writeUtf8Map(envVars, FileManager.getEnvVarsFile(build), DELIMITER);
+        File envVarsFile = FileManager.getEnvVarsFile(context.getBuild());
+        FileUtils.writeUtf8String("", envVarsFile);
+        FileUtils.writeUtf8Map(context.getEnvVars(), envVarsFile, DELIMITER);
     }
 
     @Override

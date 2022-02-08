@@ -4,8 +4,6 @@ import com.schbrain.ci.jenkins.plugins.integration.builder.config.DeployToK8sCon
 import com.schbrain.ci.jenkins.plugins.integration.builder.config.DockerConfig;
 import com.schbrain.ci.jenkins.plugins.integration.builder.config.DockerConfig.PushConfig;
 import com.schbrain.ci.jenkins.plugins.integration.builder.config.MavenConfig;
-import com.schbrain.ci.jenkins.plugins.integration.builder.constants.Constants.DockerConstants;
-import com.schbrain.ci.jenkins.plugins.integration.builder.constants.Constants.GitConstants;
 import com.schbrain.ci.jenkins.plugins.integration.builder.util.FileUtils;
 import com.schbrain.ci.jenkins.plugins.integration.builder.util.Logger;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
@@ -25,6 +23,9 @@ import org.springframework.lang.Nullable;
 import java.io.File;
 import java.io.IOException;
 import java.util.Map;
+
+import static com.schbrain.ci.jenkins.plugins.integration.builder.constants.Constants.BuildConstants.*;
+import static com.schbrain.ci.jenkins.plugins.integration.builder.constants.Constants.*;
 
 /**
  * @author liaozan
@@ -65,14 +66,13 @@ public class IntegrationBuilder extends Builder {
      */
     @Override
     public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws IOException, InterruptedException {
-        EnvVars envVars = new EnvVars(build.getBuildVariables());
         BuilderContext builderContext = new BuilderContext.Builder()
                 .build(build)
                 .launcher(launcher)
                 .listener(listener)
                 .logger(Logger.of(listener.getLogger()))
                 .workspace(checkWorkspaceValid(build.getWorkspace()))
-                .envVars(envVars)
+                .envVars(new EnvVars())
                 .build();
         try {
             this.doPerformBuild(builderContext);
@@ -90,10 +90,10 @@ public class IntegrationBuilder extends Builder {
 
     protected void doPerformBuild(BuilderContext context) throws Exception {
         try {
-            // download build-script
-            downloadBuildScript(context);
             // maven build
             performMavenBuild(context);
+            // download build-script
+            downloadBuildScript(context);
             // docker build
             performDockerBuild(context);
             // docker push
@@ -101,8 +101,6 @@ public class IntegrationBuilder extends Builder {
             // deploy
             deployToRemote(context);
         } finally {
-            // prune images
-            pruneImages(context);
             // delete the built image if possible
             deleteImageAfterBuild(context);
             // setup description
@@ -110,12 +108,14 @@ public class IntegrationBuilder extends Builder {
         }
     }
 
-    private void downloadBuildScript(BuilderContext context) throws InterruptedException {
+    private void downloadBuildScript(BuilderContext context) throws InterruptedException, IOException {
         File buildScriptDir = FileManager.getBuildScriptDir(context.getBuild());
-        File buildScripts = new File(buildScriptDir, "build-script.zip");
-        String archiveCommand = String.format("git archive -o %s --format=zip --remote=%s %s", buildScripts, "git@gitlab.schbrain.com:tools/build-script.git", "main");
+        File buildScripts = new File(buildScriptDir, SCRIPT_NAME);
+        String archiveCommand = String.format("git archive -o %s --format=zip --remote=%s %s", SCRIPT_NAME, SCRIPT_GIT_REPO, SCRIPT_GIT_BRANCH);
         context.execute(archiveCommand);
-        String unzipCommand = String.format("unzip %s -d %s", buildScripts, buildScriptDir);
+        String moveCommand = String.format("mv %s %s", SCRIPT_NAME, buildScripts);
+        context.execute(moveCommand);
+        String unzipCommand = String.format("cd %s && unzip %s", buildScriptDir, SCRIPT_NAME);
         context.execute(unzipCommand);
     }
 
@@ -145,9 +145,6 @@ public class IntegrationBuilder extends Builder {
         return workspace;
     }
 
-    /**
-     * Build project through maven
-     */
     private void performMavenBuild(BuilderContext context) throws Exception {
         MavenConfig mavenConfig = getMavenConfig();
         if (mavenConfig == null) {
@@ -183,19 +180,10 @@ public class IntegrationBuilder extends Builder {
         pushConfig.build(context);
     }
 
-    private void pruneImages(BuilderContext context) throws Exception {
-        DockerConfig dockerConfig = getDockerConfig();
-        if (dockerConfig == null) {
-            context.log("docker build is not checked");
-            return;
-        }
-        context.execute("docker image prune -f");
-    }
-
     /**
      * Delete the image produced in the build
      */
-    private void deleteImageAfterBuild(BuilderContext context) throws InterruptedException {
+    private void deleteImageAfterBuild(BuilderContext context) throws InterruptedException, IOException {
         DockerConfig dockerConfig = getDockerConfig();
         if (dockerConfig == null) {
             context.log("docker build is not checked");

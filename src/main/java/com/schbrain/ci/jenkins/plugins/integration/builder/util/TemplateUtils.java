@@ -1,7 +1,10 @@
 package com.schbrain.ci.jenkins.plugins.integration.builder.util;
 
-import org.apache.commons.lang3.StringUtils;
+import org.apache.velocity.VelocityContext;
+import org.apache.velocity.app.Velocity;
 
+import java.io.StringWriter;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
@@ -10,23 +13,19 @@ import java.util.Map;
  */
 public class TemplateUtils {
 
-    public static String format(String template, Map<String, String> map) {
+    public static String resolve(String template, Map<String, String> variables) {
         if (null == template) {
             return null;
         }
-        if (null == map || map.isEmpty()) {
+        if (null == variables || variables.isEmpty()) {
             return template;
         }
 
-        String replaced = template;
-        for (Map.Entry<String, String> entry : map.entrySet()) {
-            String value = entry.getValue();
-            if (null == entry.getValue()) {
-                continue;
-            }
-            replaced = StringUtils.replace(replaced, "{" + entry.getKey() + "}", value);
-        }
-        return replaced;
+        Map<String, Object> params = new LinkedHashMap<>(variables);
+        VelocityContext velocityContext = new VelocityContext(params);
+        StringWriter writer = new StringWriter();
+        Velocity.evaluate(velocityContext, writer, "Template Evaluate", template);
+        return writer.getBuffer().toString();
     }
 
 }

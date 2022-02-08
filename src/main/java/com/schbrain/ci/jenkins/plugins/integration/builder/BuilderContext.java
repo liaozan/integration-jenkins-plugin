@@ -9,6 +9,8 @@ import hudson.model.AbstractBuild;
 import hudson.model.BuildListener;
 import hudson.tasks.Shell;
 
+import java.io.IOException;
+
 /**
  * @author zhangdd on 2022/1/21
  */
@@ -30,30 +32,11 @@ public class BuilderContext {
         this.envVars = builder.envVars;
     }
 
-    public void execute(String command) throws InterruptedException {
-        executeWithRetry(command, 2);
-    }
-
-    public void executeWithRetry(String command, int retryCount) {
-        boolean completed = true;
-        int retryTimes = 0;
-        do {
-            try {
-                log("%s", command);
-                BuildEnvContributor.saveEnvVarsToDisk(this);
-                Shell shell = new Shell(command);
-                completed = shell.perform(getBuild(), getLauncher(), getListener());
-            } catch (Exception exception) {
-                exception.printStackTrace(logger);
-            } finally {
-                if (!completed) {
-                    ++retryTimes;
-                }
-            }
-        } while (retryTimes < retryCount && !completed);
-        if (!completed) {
-            throw new IllegalStateException("build task has been interrupted");
-        }
+    public void execute(String command) throws InterruptedException, IOException {
+        log("%s", command);
+        BuildEnvContributor.saveEnvVarsToDisk(this);
+        Shell shell = new Shell(command);
+        shell.perform(getBuild(), getLauncher(), getListener());
     }
 
     public AbstractBuild<?, ?> getBuild() {

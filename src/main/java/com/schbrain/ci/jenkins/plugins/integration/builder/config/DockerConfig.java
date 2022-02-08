@@ -3,6 +3,7 @@ package com.schbrain.ci.jenkins.plugins.integration.builder.config;
 import com.schbrain.ci.jenkins.plugins.integration.builder.FileManager;
 import com.schbrain.ci.jenkins.plugins.integration.builder.constants.Constants.DockerConstants;
 import com.schbrain.ci.jenkins.plugins.integration.builder.util.FileUtils;
+import com.schbrain.ci.jenkins.plugins.integration.builder.util.TemplateUtils;
 import hudson.EnvVars;
 import hudson.Extension;
 import hudson.FilePath;
@@ -13,6 +14,7 @@ import org.kohsuke.stapler.DataBoundConstructor;
 import org.springframework.lang.Nullable;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 
 import static com.schbrain.ci.jenkins.plugins.integration.builder.util.FileUtils.lookupFile;
 
@@ -75,19 +77,21 @@ public class DockerConfig extends BuildConfig<DockerConfig> {
     }
 
     private void resolveDockerfilePlaceHolder(FilePath dockerfile) throws IOException, InterruptedException {
-        readDockerBuildInfo();
-        // TODO: 2022/2/8  zhangdd
+        EnvVars envVars = readDockerBuildInfo();
+        String resolved = TemplateUtils.resolve(dockerfile.readToString(), envVars);
+        dockerfile.write(resolved, StandardCharsets.UTF_8.name());
     }
 
-    private void readDockerBuildInfo() throws IOException, InterruptedException {
+    private EnvVars readDockerBuildInfo() throws IOException, InterruptedException {
         EnvVars envVars = context.getEnvVars();
         FilePath dockerBuildInfo = lookupFile(context, DockerConstants.BUILD_INFO_FILE_NAME);
         if (dockerBuildInfo == null) {
             context.log("%s file not exist, skip docker build", DockerConstants.BUILD_INFO_FILE_NAME);
-            return;
+            return envVars;
         }
         // overwriting existing environment variables is not allowed
         FileUtils.filePathToMap(dockerBuildInfo).forEach(envVars::putIfAbsent);
+        return envVars;
     }
 
     private String getFullImageName() {

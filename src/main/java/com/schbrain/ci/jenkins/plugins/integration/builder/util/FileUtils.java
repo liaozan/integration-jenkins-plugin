@@ -47,11 +47,7 @@ public class FileUtils {
             logger.println("could not found matched file: %s", fileName);
             return null;
         }
-        FilePath matchedFile = getTheClosestFile(fileList);
-        String relativePath = toRelativePath(searchLocation, matchedFile);
-        String fileContent = matchedFile.readToString();
-        logger.println("looking for the file of %s found at %s", fileName, relativePath, fileContent);
-        return matchedFile;
+        return getTheClosestFile(fileList);
     }
 
     public static String toRelativePath(FilePath root, FilePath filePath) {

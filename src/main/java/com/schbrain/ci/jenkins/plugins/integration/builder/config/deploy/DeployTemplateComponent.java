@@ -1,17 +1,20 @@
 package com.schbrain.ci.jenkins.plugins.integration.builder.config.deploy;
 
 import com.schbrain.ci.jenkins.plugins.integration.builder.BuilderContext;
+import com.schbrain.ci.jenkins.plugins.integration.builder.FileManager;
 import com.schbrain.ci.jenkins.plugins.integration.builder.config.entry.Entry;
 import com.schbrain.ci.jenkins.plugins.integration.builder.constants.Constants.DeployConstants;
-import com.schbrain.ci.jenkins.plugins.integration.builder.constants.Constants.DockerConstants;
 import com.schbrain.ci.jenkins.plugins.integration.builder.util.TemplateUtils;
 import hudson.EnvVars;
 import hudson.Extension;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.springframework.util.CollectionUtils;
 
+import java.io.File;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
 
 /**
@@ -51,8 +54,8 @@ public class DeployTemplateComponent extends DeployStyleRadio {
     }
 
     private Path getDeployTemplate(BuilderContext context) {
-        String buildScriptDirectory = context.getEnvVars().get(DockerConstants.BUILD_SCRIPT);
-        return Paths.get(buildScriptDirectory, DeployConstants.TEMPLATE_FILE_NAME);
+        File buildScriptDir = FileManager.getBuildScriptDir(context.getBuild());
+        return Paths.get(buildScriptDir.getPath(), DeployConstants.TEMPLATE_FILE_NAME);
     }
 
     private void resolveDeployFilePlaceholder(Path templateFile, Path deployFile,
@@ -75,9 +78,9 @@ public class DeployTemplateComponent extends DeployStyleRadio {
             }
         }
         String templateContent = new String(Files.readAllBytes(templateFile), StandardCharsets.UTF_8);
-        String data = TemplateUtils.format(templateContent, envVars);
-        context.getLogger().println("resolved k8sDeployFile :\n" + data, false);
-        Files.write(deployFile, data.getBytes(StandardCharsets.UTF_8));
+        String resolved = TemplateUtils.resolve(templateContent, envVars);
+        context.getLogger().println("resolved k8sDeployFile :\n" + resolved, false);
+        Files.write(deployFile, resolved.getBytes(StandardCharsets.UTF_8));
     }
 
     @Extension
