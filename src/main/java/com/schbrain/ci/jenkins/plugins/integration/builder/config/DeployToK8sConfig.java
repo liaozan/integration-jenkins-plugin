@@ -4,12 +4,15 @@ import com.schbrain.ci.jenkins.plugins.integration.builder.config.deploy.DeployS
 import com.schbrain.ci.jenkins.plugins.integration.builder.config.entry.Entry;
 import com.schbrain.ci.jenkins.plugins.integration.builder.constants.Constants.DockerConstants;
 import com.schbrain.ci.jenkins.plugins.integration.builder.util.FileUtils;
-import hudson.*;
+import hudson.Extension;
+import hudson.FilePath;
+import hudson.Util;
 import hudson.model.Descriptor;
 import jenkins.model.Jenkins;
 import org.apache.commons.lang.StringUtils;
 import org.kohsuke.stapler.DataBoundConstructor;
 
+import java.io.File;
 import java.util.List;
 
 /**
@@ -62,7 +65,7 @@ public class DeployToK8sConfig extends BuildConfig<DeployToK8sConfig> {
         }
 
         String deployFileLocation = deployStyle.getDeployFileLocation(context, getEntries());
-        String deployFileRelativePath = FileUtils.toRelativePath(workspace, new FilePath(workspace, deployFileLocation));
+        String deployFileRelativePath = FileUtils.toRelativePath(workspace, new FilePath(new File(deployFileLocation)));
 
         String command = String.format("kubectl apply -f %s", deployFileRelativePath);
         if (StringUtils.isNotBlank(configLocation)) {
