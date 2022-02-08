@@ -3,7 +3,10 @@ package com.schbrain.ci.jenkins.plugins.integration.builder.env;
 import com.schbrain.ci.jenkins.plugins.integration.builder.util.FileUtils;
 import hudson.EnvVars;
 import hudson.Extension;
-import hudson.model.*;
+import hudson.FilePath;
+import hudson.model.AbstractBuild;
+import hudson.model.BuildVariableContributor;
+import hudson.model.Environment;
 
 import java.io.*;
 import java.util.HashMap;
@@ -47,8 +50,11 @@ public class BuildEnvContributor extends BuildVariableContributor {
 
     @Override
     public void buildVariablesFor(AbstractBuild build, Map<String, String> variables) {
-        // noinspection ConstantConditions
-        File envFilePath = getEnvVarsFile(build.getWorkspace().getBaseName());
+        FilePath workspace = build.getWorkspace();
+        if (null == workspace) {
+            return;
+        }
+        File envFilePath = getEnvVarsFile(workspace.getBaseName());
         EnvVars envVars = new EnvVars();
         for (String line : FileUtils.readUtf8Lines(envFilePath)) {
             String[] variablePair = line.split(DELIMITER);
