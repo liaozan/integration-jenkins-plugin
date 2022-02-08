@@ -2,7 +2,9 @@ package com.schbrain.ci.jenkins.plugins.integration.builder;
 
 import com.schbrain.ci.jenkins.plugins.integration.builder.env.BuildEnvContributor;
 import com.schbrain.ci.jenkins.plugins.integration.builder.util.Logger;
-import hudson.*;
+import hudson.EnvVars;
+import hudson.FilePath;
+import hudson.Launcher;
 import hudson.model.AbstractBuild;
 import hudson.model.BuildListener;
 import hudson.tasks.Shell;
@@ -38,8 +40,7 @@ public class BuilderContext {
         do {
             try {
                 log("%s", command);
-                BuildEnvContributor.clearEnvVarsFromDisk(getWorkspace().getBaseName());
-                BuildEnvContributor.saveEnvVarsToDisk(getEnvVars(), getWorkspace().getBaseName());
+                BuildEnvContributor.saveEnvVarsToDisk(this);
                 Shell shell = new Shell(command);
                 completed = shell.perform(getBuild(), getLauncher(), getListener());
             } catch (Exception exception) {

@@ -2,8 +2,9 @@ package com.schbrain.ci.jenkins.plugins.integration.builder.config;
 
 import com.schbrain.ci.jenkins.plugins.integration.builder.constants.Constants.DockerConstants;
 import com.schbrain.ci.jenkins.plugins.integration.builder.util.FileUtils;
-import hudson.*;
-import hudson.model.AbstractBuild;
+import hudson.Extension;
+import hudson.FilePath;
+import hudson.Util;
 import hudson.model.Descriptor;
 import org.apache.commons.lang.StringUtils;
 import org.kohsuke.stapler.DataBoundConstructor;
@@ -54,7 +55,7 @@ public class DockerConfig extends BuildConfig<DockerConfig> {
             context.log("Dockerfile not exist, skip docker build");
             return;
         }
-        String imageName = getFullImageName(envVars, build);
+        String imageName = getFullImageName();
         if (imageName == null) {
             return;
         }
@@ -65,8 +66,7 @@ public class DockerConfig extends BuildConfig<DockerConfig> {
         context.execute(command);
     }
 
-    @Nullable
-    private String getFullImageName(EnvVars envVars, AbstractBuild<?, ?> build) {
+    private String getFullImageName() {
         String registry = null;
         PushConfig pushConfig = getPushConfig();
         if (pushConfig != null) {

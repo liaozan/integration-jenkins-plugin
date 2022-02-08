@@ -1,14 +1,21 @@
 package com.schbrain.ci.jenkins.plugins.integration.builder;
 
-import com.schbrain.ci.jenkins.plugins.integration.builder.config.*;
+import com.schbrain.ci.jenkins.plugins.integration.builder.config.DeployToK8sConfig;
+import com.schbrain.ci.jenkins.plugins.integration.builder.config.DockerConfig;
 import com.schbrain.ci.jenkins.plugins.integration.builder.config.DockerConfig.PushConfig;
+import com.schbrain.ci.jenkins.plugins.integration.builder.config.MavenConfig;
 import com.schbrain.ci.jenkins.plugins.integration.builder.constants.Constants.DockerConstants;
 import com.schbrain.ci.jenkins.plugins.integration.builder.constants.Constants.GitConstants;
 import com.schbrain.ci.jenkins.plugins.integration.builder.util.FileUtils;
 import com.schbrain.ci.jenkins.plugins.integration.builder.util.Logger;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
-import hudson.*;
-import hudson.model.*;
+import hudson.EnvVars;
+import hudson.Extension;
+import hudson.FilePath;
+import hudson.Launcher;
+import hudson.model.AbstractBuild;
+import hudson.model.BuildListener;
+import hudson.model.Descriptor;
 import hudson.tasks.Builder;
 import net.sf.json.JSONObject;
 import org.kohsuke.stapler.DataBoundConstructor;
@@ -82,8 +89,6 @@ public class IntegrationBuilder extends Builder {
 
     protected void doPerformBuild(BuilderContext context) throws Exception {
         try {
-            // fail fast if workspace is invalid
-            checkWorkspaceValid(context.getWorkspace());
             // maven build
             performMavenBuild(context);
             // docker build
@@ -92,9 +97,6 @@ public class IntegrationBuilder extends Builder {
             performDockerPush(context);
             // deploy
             deployToRemote(context);
-        } catch (Exception exception) {
-            exception.printStackTrace(context.getLogger());
-            throw exception;
         } finally {
             // prune images
             pruneImages(context);
