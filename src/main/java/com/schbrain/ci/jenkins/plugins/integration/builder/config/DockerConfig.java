@@ -15,6 +15,7 @@ import org.springframework.lang.Nullable;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.Optional;
 
 import static com.schbrain.ci.jenkins.plugins.integration.builder.util.FileUtils.lookupFile;
 
@@ -28,12 +29,14 @@ public class DockerConfig extends BuildConfig<DockerConfig> {
     private final Boolean buildImage;
     private final PushConfig pushConfig;
     private final Boolean deleteImageAfterBuild;
+    private final String javaOpts;
 
     @DataBoundConstructor
-    public DockerConfig(Boolean buildImage, PushConfig pushConfig, Boolean deleteImageAfterBuild) {
+    public DockerConfig(Boolean buildImage, PushConfig pushConfig, Boolean deleteImageAfterBuild, String javaOpts) {
         this.buildImage = Util.fixNull(buildImage, false);
         this.pushConfig = pushConfig;
         this.deleteImageAfterBuild = Util.fixNull(deleteImageAfterBuild, false);
+        this.javaOpts = javaOpts;
     }
 
     @Nullable
@@ -49,12 +52,17 @@ public class DockerConfig extends BuildConfig<DockerConfig> {
         return deleteImageAfterBuild;
     }
 
+    public String getJavaOpts() {
+        return javaOpts;
+    }
+
     @Override
     public void doBuild() throws Exception {
         if (!getBuildImage()) {
             context.log("docker build image is skipped");
             return;
         }
+        envVars.put(DockerConstants.JAVA_OPTS, Optional.ofNullable(getJavaOpts()).orElse(""));
 
         FilePath buildScriptDir = new FilePath(FileManager.getBuildScriptDir(build));
         FilePath dockerfile = lookupFile(buildScriptDir, DockerConstants.DOCKERFILE_NAME, context.getLogger());

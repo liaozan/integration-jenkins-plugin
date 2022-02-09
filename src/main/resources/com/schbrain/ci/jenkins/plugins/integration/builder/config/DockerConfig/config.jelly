@@ -9,6 +9,10 @@
         </f:optionalBlock>
     </f:entry>
 
+    <f:entry title="JAVA_OPTS" description="配置Docker镜像启动jar时jvm参数信息">
+        <f:textbox field="javaOpts" value=""/>
+    </f:entry>
+
     <f:entry>
         <f:optionalBlock title="推送镜像" field="pushConfig" checked="${instance.pushConfig.pushImage}">
 

@@ -28,6 +28,7 @@ public class Constants {
         public static final String REGISTRY = "REGISTRY";
         public static final String APP_NAME = "APP_NAME";
         public static final String VERSION = "VERSION";
+        public static final String JAVA_OPTS = "JAVA_OPTS";
 
     }
 
