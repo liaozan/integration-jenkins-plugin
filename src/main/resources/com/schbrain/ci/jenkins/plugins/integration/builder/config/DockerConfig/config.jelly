@@ -9,7 +9,7 @@
         </f:optionalBlock>
     </f:entry>
 
-    <f:entry title="JAVA_OPTS" description="配置Docker镜像启动jar时jvm参数信息">
+    <f:entry title="JAVA_OPTS" description="配置Dockerfile中jvm参数">
         <f:textbox field="javaOpts" value=""/>
     </f:entry>
 
