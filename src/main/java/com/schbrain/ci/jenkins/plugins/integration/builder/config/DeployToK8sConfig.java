@@ -21,7 +21,6 @@ import java.util.List;
 @SuppressWarnings("unused")
 public class DeployToK8sConfig extends BuildConfig<DeployToK8sConfig> {
 
-
     private final String configLocation;
 
     private final DeployStyleRadio deployStyle;
@@ -31,8 +30,6 @@ public class DeployToK8sConfig extends BuildConfig<DeployToK8sConfig> {
         this.configLocation = Util.fixNull(configLocation);
         this.deployStyle = deployStyle;
     }
-
-
 
     public String getConfigLocation() {
         return configLocation;

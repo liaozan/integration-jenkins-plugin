@@ -2,8 +2,12 @@ package com.schbrain.ci.jenkins.plugins.integration.builder.config;
 
 import com.schbrain.ci.jenkins.plugins.integration.builder.BuilderContext;
 import com.schbrain.ci.jenkins.plugins.integration.builder.util.Logger;
-import hudson.*;
-import hudson.model.*;
+import hudson.EnvVars;
+import hudson.FilePath;
+import hudson.Launcher;
+import hudson.model.AbstractBuild;
+import hudson.model.AbstractDescribableImpl;
+import hudson.model.BuildListener;
 
 /**
  * @author liaozan

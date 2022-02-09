@@ -15,6 +15,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
+import static com.schbrain.ci.jenkins.plugins.integration.builder.constants.Constants.DeployConstants.*;
+
 /**
  * @author zhangdd on 2022/1/20
  */
@@ -65,10 +67,9 @@ public class DeployTemplateComponent extends DeployStyleRadio {
         }
 
         EnvVars envVars = context.getEnvVars();
-        envVars.put("NAMESPACE", getNamespace());
-        envVars.put("PORT", getPort());
-        envVars.put("REPLICAS", getReplicas());
-
+        envVars.put(K8S_NAMESPACE, getNamespace());
+        envVars.put(K8S_PORT, getPort());
+        envVars.put(K8S_REPLICAS, getReplicas());
 
         String templateContent = new String(Files.readAllBytes(templateFile), StandardCharsets.UTF_8);
         String resolved = TemplateUtils.resolve(templateContent, envVars);

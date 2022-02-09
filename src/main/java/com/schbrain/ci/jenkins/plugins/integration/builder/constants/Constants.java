@@ -17,6 +17,9 @@ public class Constants {
 
         public static final String TEMPLATE_FILE_NAME = "k8s-deploy-template.yaml";
         public static final String DEPLOY_FILE_NAME = "deploy.yaml";
+        public static final String K8S_NAMESPACE = "NAMESPACE";
+        public static final String K8S_PORT = "PORT";
+        public static final String K8S_REPLICAS = "REPLICAS";
 
     }
 
