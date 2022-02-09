@@ -11,10 +11,6 @@
         <f:hetero-radio field="deployStyle" descriptors="${descriptor.getDeployStyles()}"/>
     </f:entry>
 
-    <f:entry title="yaml配置" description="额外的配置">
-        <f:repeatableHeteroProperty field="entries" oneEach="true" hasHeader="true"/>
-    </f:entry>
-
     <f:entry/>
 
 </j:jelly>

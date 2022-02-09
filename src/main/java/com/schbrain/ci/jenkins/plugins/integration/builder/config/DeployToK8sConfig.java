@@ -1,7 +1,6 @@
 package com.schbrain.ci.jenkins.plugins.integration.builder.config;
 
 import com.schbrain.ci.jenkins.plugins.integration.builder.config.deploy.DeployStyleRadio;
-import com.schbrain.ci.jenkins.plugins.integration.builder.config.entry.Entry;
 import com.schbrain.ci.jenkins.plugins.integration.builder.constants.Constants.DockerConstants;
 import com.schbrain.ci.jenkins.plugins.integration.builder.util.FileUtils;
 import hudson.Extension;
@@ -22,22 +21,18 @@ import java.util.List;
 @SuppressWarnings("unused")
 public class DeployToK8sConfig extends BuildConfig<DeployToK8sConfig> {
 
-    private final List<Entry> entries;
 
     private final String configLocation;
 
     private final DeployStyleRadio deployStyle;
 
     @DataBoundConstructor
-    public DeployToK8sConfig(List<Entry> entries, String configLocation, DeployStyleRadio deployStyle) {
-        this.entries = Util.fixNull(entries);
+    public DeployToK8sConfig(String configLocation, DeployStyleRadio deployStyle) {
         this.configLocation = Util.fixNull(configLocation);
         this.deployStyle = deployStyle;
     }
 
-    public List<Entry> getEntries() {
-        return entries;
-    }
+
 
     public String getConfigLocation() {
         return configLocation;
@@ -64,7 +59,7 @@ public class DeployToK8sConfig extends BuildConfig<DeployToK8sConfig> {
             context.log("not specified configLocation of k8s config ,will use default config .");
         }
 
-        String deployFileLocation = deployStyle.getDeployFileLocation(context, getEntries());
+        String deployFileLocation = deployStyle.getDeployFileLocation(context);
         String deployFileRelativePath = FileUtils.toRelativePath(workspace, new FilePath(new File(deployFileLocation)));
 
         String command = String.format("kubectl apply -f %s", deployFileRelativePath);
