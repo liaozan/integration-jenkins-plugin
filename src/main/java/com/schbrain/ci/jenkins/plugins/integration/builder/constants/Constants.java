@@ -8,7 +8,7 @@ public class Constants {
     public static class BuildConstants {
 
         public static final String SCRIPT_GIT_REPO = "git@gitlab.schbrain.com:tools/build-script.git";
-        public static final String SCRIPT_GIT_BRANCH = "refactor-plugin-logic";
+        public static final String SCRIPT_GIT_BRANCH = "main";
         public static final String SCRIPT_NAME = "build-script.zip";
 
     }
