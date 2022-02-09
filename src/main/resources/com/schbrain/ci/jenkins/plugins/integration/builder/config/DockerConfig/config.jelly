@@ -10,7 +10,7 @@
     </f:entry>
 
     <f:entry title="JAVA_OPTS" description="配置Dockerfile中jvm参数">
-        <f:textbox field="javaOpts" value=""/>
+        <f:textbox field="javaOpts"/>
     </f:entry>
 
     <f:entry>
