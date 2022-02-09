@@ -103,6 +103,8 @@ public class IntegrationBuilder extends Builder {
         } finally {
             // delete the built image if possible
             deleteImageAfterBuild(context);
+            // prune image
+            pruneImageCache(context);
             // setup description
             setBuildDescription(context);
         }
@@ -201,6 +203,10 @@ public class IntegrationBuilder extends Builder {
 
         String command = String.format("docker rmi -f %s", imageName);
         context.execute(command);
+    }
+
+    private void pruneImageCache(BuilderContext context) throws IOException, InterruptedException {
+        context.execute("docker image prune -f");
     }
 
     /**
