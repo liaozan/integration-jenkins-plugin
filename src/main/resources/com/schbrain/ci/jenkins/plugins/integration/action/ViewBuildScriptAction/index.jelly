@@ -1,0 +1,10 @@
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:l="/lib/layout" xmlns:st="jelly:stapler">
+    <l:layout title="build-scripts">
+        <l:main-panel>
+            <h2>构建脚本</h2>
+            <j:set var="url" value="${h.getNearestAncestorUrl(request,it)}"/>
+            <st:redirect url="${url}/list"/>
+        </l:main-panel>
+    </l:layout>
+</j:jelly>

@@ -1,5 +1,6 @@
 package com.schbrain.ci.jenkins.plugins.integration.builder;
 
+import com.schbrain.ci.jenkins.plugins.integration.action.ViewBuildScriptAction;
 import com.schbrain.ci.jenkins.plugins.integration.builder.config.DeployToK8sConfig;
 import com.schbrain.ci.jenkins.plugins.integration.builder.config.DockerConfig;
 import com.schbrain.ci.jenkins.plugins.integration.builder.config.DockerConfig.PushConfig;
@@ -26,6 +27,7 @@ import java.util.Map;
 
 import static com.schbrain.ci.jenkins.plugins.integration.builder.constants.Constants.BuildConstants.*;
 import static com.schbrain.ci.jenkins.plugins.integration.builder.constants.Constants.*;
+import static com.schbrain.ci.jenkins.plugins.integration.builder.util.FileUtils.lookupFile;
 
 /**
  * @author liaozan
@@ -66,6 +68,8 @@ public class IntegrationBuilder extends Builder {
      */
     @Override
     public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws IOException, InterruptedException {
+        File buildScriptDir = FileManager.getBuildScriptDir(build);
+        build.addAction(new ViewBuildScriptAction(buildScriptDir));
         BuilderContext builderContext = new BuilderContext.Builder()
                 .build(build)
                 .launcher(launcher)
@@ -92,6 +96,8 @@ public class IntegrationBuilder extends Builder {
         try {
             // maven build
             performMavenBuild(context);
+            // read maven build-info
+            readMavenBuildInfo(context);
             // download build-script
             downloadBuildScript(context);
             // docker build
@@ -155,6 +161,17 @@ public class IntegrationBuilder extends Builder {
         }
 
         mavenConfig.build(context);
+    }
+
+    private void readMavenBuildInfo(BuilderContext context) throws IOException, InterruptedException {
+        EnvVars envVars = context.getEnvVars();
+        FilePath dockerBuildInfo = lookupFile(context, DockerConstants.BUILD_INFO_FILE_NAME);
+        if (dockerBuildInfo == null) {
+            context.log("%s file not exist, skip docker build", DockerConstants.BUILD_INFO_FILE_NAME);
+            return;
+        }
+        // overwriting existing environment variables is not allowed
+        FileUtils.filePathToMap(dockerBuildInfo).forEach(envVars::putIfAbsent);
     }
 
     private void performDockerBuild(BuilderContext context) throws Exception {

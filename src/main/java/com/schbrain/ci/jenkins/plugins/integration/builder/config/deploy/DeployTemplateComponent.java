@@ -73,7 +73,6 @@ public class DeployTemplateComponent extends DeployStyleRadio {
 
         String templateContent = new String(Files.readAllBytes(templateFile), StandardCharsets.UTF_8);
         String resolved = TemplateUtils.resolve(templateContent, envVars);
-        context.getLogger().println("resolved k8sDeployFile :\n" + resolved, false);
         Files.write(deployFile, resolved.getBytes(StandardCharsets.UTF_8));
     }
 
