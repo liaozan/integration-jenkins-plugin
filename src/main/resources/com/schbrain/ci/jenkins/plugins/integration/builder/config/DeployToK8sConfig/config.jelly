@@ -7,9 +7,23 @@
         <f:textbox field="configLocation" value="${instance.configLocation}"/>
     </f:entry>
 
-    <f:entry title="选择部署方式">
+    <f:entry title="选择 Deployment 部署方式">
         <f:hetero-radio field="deployStyle" descriptors="${descriptor.getDeployStyles()}"/>
     </f:entry>
+
+    <f:optionalBlock title="部署 Service" field="serviceDeployConfig" checked="${instance.serviceDeployConfig != null}">
+        <f:entry title="Service 命名空间（为空时取 PodNamespace）">
+            <f:textbox field="serviceNamespace" value="${instance.serviceDeployConfig.serviceNamespace}"/>
+        </f:entry>
+
+        <f:entry title="Service 名称（为空时取 PodName）">
+            <f:textbox field="serviceName" value="${instance.serviceDeployConfig.serviceName}"/>
+        </f:entry>
+
+        <f:entry title="Service 端口号（为空时取 PodPort）">
+            <f:textbox field="servicePort" value="${instance.serviceDeployConfig.servicePort}"/>
+        </f:entry>
+    </f:optionalBlock>
 
     <f:entry/>
 

@@ -15,11 +15,16 @@ public class Constants {
 
     public static class DeployConstants {
 
-        public static final String TEMPLATE_FILE_NAME = "k8s-deploy-template.yaml";
-        public static final String DEPLOY_FILE_NAME = "deploy.yaml";
-        public static final String K8S_NAMESPACE = "NAMESPACE";
-        public static final String K8S_PORT = "PORT";
-        public static final String K8S_REPLICAS = "REPLICAS";
+        public static final String DEPLOYMENT_TEMPLATE_FILE_NAME = "k8s-deploy-template.yaml";
+        public static final String SERVICE_TEMPLATE_FILE_NAME = "k8s-service-template.yaml";
+        public static final String DEPLOYMENT_DEPLOY_FILE_NAME = "deployment-deploy.yaml";
+        public static final String SERVICE_DEPLOY_FILE_NAME = "service-deploy.yaml";
+        public static final String K8S_POD_NAMESPACE = "NAMESPACE";
+        public static final String K8S_POD_PORT = "PORT";
+        public static final String K8S_POD_REPLICAS = "REPLICAS";
+        public static final String K8S_SERVICE_NAMESPACE = "SERVICE_NAMESPACE";
+        public static final String K8S_SERVICE_NAME = "SERVICE_NAME";
+        public static final String K8S_SERVICE_PORT = "SERVICE_PORT";
 
     }
 

@@ -10,8 +10,6 @@ import hudson.Extension;
 import org.kohsuke.stapler.DataBoundConstructor;
 
 import java.io.File;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
@@ -48,35 +46,25 @@ public class DeployTemplateComponent extends DeployStyleRadio {
     @Override
     public String getDeployFileLocation(BuilderContext context) throws Exception {
         Path templateFile = getDeployTemplate(context);
-        Path deployFile = Paths.get(templateFile.getParent().toString(), DeployConstants.DEPLOY_FILE_NAME);
-        resolveDeployFilePlaceholder(templateFile, deployFile, context);
+        Path deployFile = Paths.get(templateFile.getParent().toString(), DeployConstants.DEPLOYMENT_DEPLOY_FILE_NAME);
+        contributeEnv(context.getEnvVars());
+        TemplateUtils.resolveDeployFilePlaceholder(templateFile, deployFile, context);
         return deployFile.toString();
+    }
+
+    private void contributeEnv(EnvVars envVars) {
+        envVars.put(K8S_POD_NAMESPACE, getNamespace());
+        envVars.put(K8S_POD_PORT, getPort());
+        envVars.put(K8S_POD_REPLICAS, getReplicas());
     }
 
     private Path getDeployTemplate(BuilderContext context) {
         File buildScriptDir = FileManager.getBuildScriptDir(context.getBuild());
-        return Paths.get(buildScriptDir.getPath(), DeployConstants.TEMPLATE_FILE_NAME);
-    }
-
-    private void resolveDeployFilePlaceholder(Path templateFile, Path deployFile, BuilderContext context) throws Exception {
-        if (templateFile == null) {
-            return;
-        }
-        if (Files.notExists(deployFile)) {
-            Files.createFile(deployFile);
-        }
-
-        EnvVars envVars = context.getEnvVars();
-        envVars.put(K8S_NAMESPACE, getNamespace());
-        envVars.put(K8S_PORT, getPort());
-        envVars.put(K8S_REPLICAS, getReplicas());
-
-        String templateContent = new String(Files.readAllBytes(templateFile), StandardCharsets.UTF_8);
-        String resolved = TemplateUtils.resolve(templateContent, envVars);
-        Files.write(deployFile, resolved.getBytes(StandardCharsets.UTF_8));
+        return Paths.get(buildScriptDir.getPath(), DEPLOYMENT_TEMPLATE_FILE_NAME);
     }
 
     @Extension
+    @SuppressWarnings("unused")
     public static class DescriptorImpl extends InventoryDescriptor {
 
         @NonNull
