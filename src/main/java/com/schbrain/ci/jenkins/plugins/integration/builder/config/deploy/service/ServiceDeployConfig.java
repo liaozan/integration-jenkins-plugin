@@ -20,15 +20,21 @@ import static com.schbrain.ci.jenkins.plugins.integration.builder.constants.Cons
  */
 public class ServiceDeployConfig {
 
+    private final String serviceMode;
     private final String serviceNamespace;
     private final String serviceName;
     private final String servicePort;
 
     @DataBoundConstructor
-    public ServiceDeployConfig(String serviceNamespace, String serviceName, String servicePort) {
+    public ServiceDeployConfig(String serviceMode, String serviceNamespace, String serviceName, String servicePort) {
+        this.serviceMode = serviceMode;
         this.serviceNamespace = serviceNamespace;
         this.serviceName = serviceName;
         this.servicePort = servicePort;
+    }
+
+    public String getServiceMode() {
+        return serviceMode;
     }
 
     public String getServiceNamespace() {
@@ -52,6 +58,8 @@ public class ServiceDeployConfig {
     }
 
     private void contributeEnv(EnvVars envVars) {
+        envVars.put(K8S_SERVICE_MODE, getServiceMode());
+
         if (StringUtils.hasText(getServiceNamespace())) {
             envVars.put(K8S_SERVICE_NAMESPACE, getServiceNamespace());
         } else {

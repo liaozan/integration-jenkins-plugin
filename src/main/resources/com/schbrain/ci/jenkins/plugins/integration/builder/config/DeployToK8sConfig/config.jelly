@@ -12,6 +12,13 @@
     </f:entry>
 
     <f:optionalBlock title="部署 Service" field="serviceDeployConfig" checked="${instance.serviceDeployConfig != null}">
+        <j:set var="currentConfig" value="${instance.serviceDeployConfig}"/>
+        <j:set var="defaultValue" value="ClusterIP"/>
+        <f:entry title="Service 类型">
+            <f:radio name="serviceMode" title="ClusterIP" checked="${currentConfig.serviceMode == null || currentConfig.serviceMode == 'ClusterIP'}" value="ClusterIP"/>
+            <f:radio name="serviceMode" title="LoadBalancer" checked="${currentConfig.serviceMode == 'LoadBalancer'}" value="LoadBalancer"/>
+        </f:entry>
+
         <f:entry title="Service 命名空间（为空时取 PodNamespace）">
             <f:textbox field="serviceNamespace" value="${instance.serviceDeployConfig.serviceNamespace}"/>
         </f:entry>
