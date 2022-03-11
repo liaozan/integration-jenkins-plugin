@@ -70,6 +70,9 @@ public class DeployToK8sConfig extends BuildConfig<DeployToK8sConfig> {
     }
 
     private void buildService() throws Exception {
+        if (serviceDeployConfig == null) {
+            return;
+        }
         String deployFileLocation = serviceDeployConfig.getServiceDeployFileLocation(context);
         executeK8sCommand(deployFileLocation);
     }
