@@ -35,7 +35,7 @@ public class BuilderContext {
     public void execute(String command) throws InterruptedException, IOException {
         log("%s", command);
         BuildEnvContributor.saveEnvVarsToDisk(this);
-        Shell shell = new Shell(command);
+        Shell shell = new ExceptionCatchShell(command);
         shell.perform(getBuild(), getLauncher(), getListener());
     }
 
