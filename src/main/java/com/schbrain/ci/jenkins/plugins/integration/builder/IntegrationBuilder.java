@@ -107,10 +107,12 @@ public class IntegrationBuilder extends Builder {
             // deploy
             deployToRemote(context);
         } finally {
-            // delete the built image if possible
-            deleteImageAfterBuild(context);
-            // prune image
-            pruneImageCache(context);
+            if (context.isImageHasBeenBuilt()) {
+                // delete the built image if possible
+                deleteImageAfterBuild(context);
+                // prune image
+                pruneImageCache(context);
+            }
             // setup description
             setBuildDescription(context);
         }

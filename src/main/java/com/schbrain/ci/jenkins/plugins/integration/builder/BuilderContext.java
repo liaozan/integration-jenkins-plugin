@@ -23,6 +23,8 @@ public class BuilderContext {
     private final Logger logger;
     private final EnvVars envVars;
 
+    private boolean imageHasBeenBuilt;
+
     private BuilderContext(Builder builder) {
         this.build = builder.build;
         this.launcher = builder.launcher;
@@ -30,6 +32,7 @@ public class BuilderContext {
         this.listener = builder.listener;
         this.logger = builder.logger;
         this.envVars = builder.envVars;
+        this.imageHasBeenBuilt = false;
     }
 
     public void execute(String command) throws InterruptedException, IOException {
@@ -61,6 +64,14 @@ public class BuilderContext {
 
     public EnvVars getEnvVars() {
         return envVars;
+    }
+
+    public boolean isImageHasBeenBuilt() {
+        return imageHasBeenBuilt;
+    }
+
+    public void setImageHasBeenBuilt() {
+        this.imageHasBeenBuilt = true;
     }
 
     public void log(String template) {

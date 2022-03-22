@@ -81,6 +81,7 @@ public class DockerConfig extends BuildConfig<DockerConfig> {
         String relativePath = FileUtils.toRelativePath(workspace, dockerfile);
         String command = String.format("docker build -t %s -f %s .", imageName, relativePath);
         context.execute(command);
+        context.setImageHasBeenBuilt();
     }
 
     private void resolveDockerfilePlaceHolder(FilePath dockerfile) throws IOException, InterruptedException {
