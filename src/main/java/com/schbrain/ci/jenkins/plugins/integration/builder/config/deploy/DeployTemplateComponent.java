@@ -18,6 +18,7 @@ import static com.schbrain.ci.jenkins.plugins.integration.builder.constants.Cons
 /**
  * @author zhangdd on 2022/1/20
  */
+@SuppressWarnings("unused")
 public class DeployTemplateComponent extends DeployStyleRadio {
 
     private final String namespace;
@@ -64,7 +65,6 @@ public class DeployTemplateComponent extends DeployStyleRadio {
     }
 
     @Extension
-    @SuppressWarnings("unused")
     public static class DescriptorImpl extends InventoryDescriptor {
 
         @NonNull

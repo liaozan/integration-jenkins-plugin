@@ -28,6 +28,7 @@ public abstract class BuildConfig<T extends AbstractDescribableImpl<T>> extends 
         this.build = context.getBuild();
         this.launcher = context.getLauncher();
         this.workspace = context.getWorkspace();
+        this.listener = context.getListener();
         this.logger = context.getLogger();
         this.envVars = context.getEnvVars();
         doBuild();

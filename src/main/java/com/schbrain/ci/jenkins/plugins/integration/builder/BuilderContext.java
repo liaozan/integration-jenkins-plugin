@@ -2,6 +2,7 @@ package com.schbrain.ci.jenkins.plugins.integration.builder;
 
 import com.schbrain.ci.jenkins.plugins.integration.builder.env.BuildEnvContributor;
 import com.schbrain.ci.jenkins.plugins.integration.builder.util.Logger;
+import com.schbrain.ci.jenkins.plugins.integration.builder.util.TemplateUtils;
 import hudson.EnvVars;
 import hudson.FilePath;
 import hudson.Launcher;
@@ -10,6 +11,7 @@ import hudson.model.BuildListener;
 import hudson.tasks.Shell;
 
 import java.io.IOException;
+import java.util.Objects;
 
 /**
  * @author zhangdd on 2022/1/21
@@ -36,6 +38,11 @@ public class BuilderContext {
     }
 
     public void execute(String command) throws InterruptedException, IOException {
+        String resolvedCommand = TemplateUtils.resolve(command, envVars);
+        if (!Objects.equals(resolvedCommand, command)) {
+            log("before resolve: %s",command);
+            command = resolvedCommand;
+        }
         log("%s", command);
         BuildEnvContributor.saveEnvVarsToDisk(this);
         Shell shell = new ExceptionCatchShell(command);

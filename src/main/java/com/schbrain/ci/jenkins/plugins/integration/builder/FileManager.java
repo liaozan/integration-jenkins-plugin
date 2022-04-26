@@ -17,8 +17,8 @@ public class FileManager {
     }
 
     public static File getEnvVarsFile(AbstractBuild<?, ?> build) throws IOException {
-        File cacheDir = getCacheDir(build);
-        File envVarsFile = new File(cacheDir, "envVars");
+        File buildScriptDir = getBuildScriptDir(build);
+        File envVarsFile = new File(buildScriptDir, "envVars");
         if (!envVarsFile.exists()) {
             envVarsFile.createNewFile();
         }
