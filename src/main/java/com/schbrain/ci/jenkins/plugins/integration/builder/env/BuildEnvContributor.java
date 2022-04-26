@@ -34,7 +34,6 @@ public class BuildEnvContributor extends BuildVariableContributor {
         try {
             envFilePath = FileManager.getEnvVarsFile(build);
         } catch (IOException e) {
-            e.printStackTrace();
             return;
         }
         EnvVars envVars = new EnvVars();

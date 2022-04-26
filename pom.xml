@@ -21,7 +21,7 @@
 
     <properties>
         <java.level>8</java.level>
-        <jenkins.version>2.341</jenkins.version>
+        <jenkins.version>2.344</jenkins.version>
     </properties>
 
     <dependencies>
@@ -34,6 +34,21 @@
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-lang3</artifactId>
             <version>3.12.0</version>
+        </dependency>
+        <dependency>
+            <groupId>org.jenkins-ci.plugins</groupId>
+            <artifactId>git</artifactId>
+            <version>4.11.1</version>
+        </dependency>
+        <dependency>
+            <groupId>org.jenkins-ci.tools</groupId>
+            <artifactId>git-parameter</artifactId>
+            <version>0.9.16</version>
+        </dependency>
+        <dependency>
+            <groupId>org.jenkins-ci.plugins</groupId>
+            <artifactId>localization-zh-cn</artifactId>
+            <version>1.0.24</version>
         </dependency>
     </dependencies>
 

@@ -12,9 +12,7 @@ import hudson.EnvVars;
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.Launcher;
-import hudson.model.AbstractBuild;
-import hudson.model.BuildListener;
-import hudson.model.Descriptor;
+import hudson.model.*;
 import hudson.tasks.Builder;
 import net.sf.json.JSONObject;
 import org.kohsuke.stapler.DataBoundConstructor;
@@ -23,6 +21,7 @@ import org.springframework.lang.Nullable;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
 import java.util.Map;
 
 import static com.schbrain.ci.jenkins.plugins.integration.builder.constants.Constants.BuildConstants.*;
@@ -33,6 +32,7 @@ import static com.schbrain.ci.jenkins.plugins.integration.builder.util.FileUtils
  * @author liaozan
  * @since 2022/1/14
  */
+@SuppressWarnings("unused")
 public class IntegrationBuilder extends Builder {
 
     private final MavenConfig mavenConfig;
@@ -76,7 +76,7 @@ public class IntegrationBuilder extends Builder {
                 .listener(listener)
                 .logger(Logger.of(listener.getLogger()))
                 .workspace(checkWorkspaceValid(build.getWorkspace()))
-                .envVars(new EnvVars())
+                .envVars(createEnvVars(build))
                 .build();
         try {
             this.doPerformBuild(builderContext);
@@ -118,6 +118,19 @@ public class IntegrationBuilder extends Builder {
         }
     }
 
+    private EnvVars createEnvVars(AbstractBuild<?, ?> build) {
+        EnvVars envVars = new EnvVars();
+        ParametersAction parametersAction = build.getAction(ParametersAction.class);
+        List<ParameterValue> allParameters = parametersAction.getAllParameters();
+        for (ParameterValue parameter : allParameters) {
+            if (parameter.getValue() == null) {
+                continue;
+            }
+            envVars.put(parameter.getName(), parameter.getValue().toString());
+        }
+        return envVars;
+    }
+
     private void downloadBuildScript(BuilderContext context) throws InterruptedException, IOException {
         File buildScriptDir = FileManager.getBuildScriptDir(context.getBuild());
         File buildScripts = new File(buildScriptDir, SCRIPT_NAME);
@@ -130,7 +143,7 @@ public class IntegrationBuilder extends Builder {
     }
 
     private void setBuildDescription(BuilderContext context) throws IOException, InterruptedException {
-        FilePath gitPropertiesFile = FileUtils.lookupFile(context, GitConstants.GIT_PROPERTIES_FILE);
+        FilePath gitPropertiesFile = lookupFile(context, GitConstants.GIT_PROPERTIES_FILE);
         if (gitPropertiesFile == null) {
             return;
         }
@@ -243,7 +256,7 @@ public class IntegrationBuilder extends Builder {
 
     // can not move outside builder class
     @Extension
-    @SuppressWarnings({"unused"})
+    @SuppressWarnings("unused")
     public static class IntegrationDescriptor extends Descriptor<Builder> {
 
         public IntegrationDescriptor() {
