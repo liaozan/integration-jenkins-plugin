@@ -121,6 +121,9 @@ public class IntegrationBuilder extends Builder {
     private EnvVars createEnvVars(AbstractBuild<?, ?> build) {
         EnvVars envVars = new EnvVars();
         ParametersAction parametersAction = build.getAction(ParametersAction.class);
+        if (parametersAction == null) {
+            return envVars;
+        }
         List<ParameterValue> allParameters = parametersAction.getAllParameters();
         for (ParameterValue parameter : allParameters) {
             if (parameter.getValue() == null) {

@@ -11,6 +11,14 @@
         <f:textbox field="replicas" value="${instance.replicate}" default="1"/>
     </f:entry>
 
+    <f:entry title="Pod 内存限制">
+        <f:textbox field="memoryLimit" value="${instance.memoryLimit}" default="2G"/>
+    </f:entry>
+
+    <f:entry title="Pod 节点池Id (用于指定亲和性)">
+        <f:textbox field="nodePoolId" value="${instance.nodePoolId}"/>
+    </f:entry>
+
     <f:entry title="Pod 端口号">
         <f:textbox field="port" value="${instance.port}"/>
     </f:entry>
