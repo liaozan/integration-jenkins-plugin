@@ -22,14 +22,16 @@ public class DeployTemplateComponent extends DeployStyleRadio {
 
     private final String namespace;
     private final String replicas;
+    private final String memoryRequest;
     private final String memoryLimit;
     private final String nodePoolId;
     private final String port;
 
     @DataBoundConstructor
-    public DeployTemplateComponent(String namespace, String replicas, String memoryLimit, String nodePoolId, String port) {
+    public DeployTemplateComponent(String namespace, String replicas, String memoryRequest, String memoryLimit, String nodePoolId, String port) {
         this.namespace = namespace;
         this.replicas = replicas;
+        this.memoryRequest = memoryRequest;
         this.memoryLimit = memoryLimit;
         this.nodePoolId = nodePoolId;
         this.port = port;
@@ -41,6 +43,10 @@ public class DeployTemplateComponent extends DeployStyleRadio {
 
     public String getReplicas() {
         return replicas;
+    }
+
+    public String getMemoryRequest() {
+        return memoryRequest;
     }
 
     public String getMemoryLimit() {
@@ -68,6 +74,7 @@ public class DeployTemplateComponent extends DeployStyleRadio {
         envVars.put(K8S_POD_NAMESPACE, getNamespace());
         envVars.put(K8S_POD_PORT, getPort());
         envVars.put(K8S_POD_REPLICAS, getReplicas());
+        envVars.put(K8S_POD_MEMORY_REQUEST, getMemoryRequest());
         envVars.put(K8S_POD_MEMORY_LIMIT, getMemoryLimit());
         envVars.put(K8S_POD_NODE_POOL_ID, getNodePoolId());
     }

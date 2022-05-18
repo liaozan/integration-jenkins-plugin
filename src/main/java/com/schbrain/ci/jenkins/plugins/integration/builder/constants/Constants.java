@@ -23,6 +23,7 @@ public class Constants {
         public static final String K8S_POD_PORT = "PORT";
         public static final String K8S_POD_REPLICAS = "REPLICAS";
         public static final String K8S_POD_MEMORY_LIMIT = "MEMORY_LIMIT";
+        public static final String K8S_POD_MEMORY_REQUEST = "MEMORY_REQUEST";
         public static final String K8S_POD_NODE_POOL_ID = "NODE_POOL_ID";
         public static final String K8S_SERVICE_MODE = "SERVICE_MODE";
         public static final String K8S_SERVICE_NAMESPACE = "SERVICE_NAMESPACE";
